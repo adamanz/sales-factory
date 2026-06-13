@@ -1,31 +1,30 @@
 # Pitch Deliverables Rubric
 
-DONE only when ALL criteria are verifiably met. Grade each independently against tool results.
+Grade ONLY from `tool_result` evidence in THIS session. If a criterion has no supporting tool
+result, mark it FAILED. The outcome is DONE only when all required criteria pass.
 
 ## 1. Catalog grounding
-- [ ] Every QuoteLineItem uses a real PricebookEntry from get_catalog (SKU-SEAT/USAGE/FDE/PREMIUM).
+- [ ] Every QuoteLineItem uses a real PricebookEntry from `get_catalog` (SKU-SEAT/USAGE/FDE/PREMIUM).
 - [ ] UnitPrice matches the catalog list price (no invented SKUs or prices).
 
 ## 2. Modern AI pricing motion
-- [ ] Seats (SKU-SEAT) are included with the negotiated Discount (e.g. 100% → $0) reflecting a land deal.
+- [ ] Seats (SKU-SEAT) are included with the negotiated Discount (e.g. 100% → $0), reflecting a land deal.
 - [ ] A Usage Pool (SKU-USAGE) line is the primary revenue driver; quantity = committed $k blocks.
-- [ ] FDE and/or Premium Support included where the call warranted expansion.
+- [ ] FDE and/or Premium Support appear on the expansion option where the call warranted it.
 
 ## 3. Quote records in Salesforce
-- [ ] A Quote linked to the demo Opportunity exists with >= 1 QuoteLineItem per option discussed (>= 2 options).
-- [ ] Quote.TotalPrice rolls up correctly (free seats contribute $0; usage pool drives the total).
+- [ ] >= 2 Quotes (one per option discussed) linked to the demo Opportunity, each with QuoteLineItems.
+- [ ] Quote.TotalPrice rolls up correctly (free seats contribute $0; the usage pool drives the total).
 - [ ] A RECOMMENDED option is identified with a one-line rationale.
 
-## 4. HTML deck (artifact)
-- [ ] deck.html written to /mnt/session/outputs/, one section per option, recommended highlighted.
-- [ ] Each option links to its quote page; a competitor battlecard appendix is present.
+## 4. Pitch deck (artifact)
+- [ ] `publish_artifact(kind=deck)` returned a live URL — an HTML deck, one section per option, recommended highlighted.
+- [ ] A competitor battlecard appendix is present (from the research subagent).
 
-## 5. Order form (Slack)
-- [ ] An interactive order form was posted to the call's Slack thread with options, total, deck link, Confirm button.
-- [ ] The post returned a confirmed Slack message ts (record it).
-
-## 6. Memory
-- [ ] Account memory updated with objections handled, options/SKUs quoted, recommended option, next step.
+## 5. Shareable offer / order form
+- [ ] `create_offer` returned an offer URL rendered live from the Salesforce Quotes, with an Accept button.
+- [ ] The offer URL was `slack_post`ed to the call thread (record the returned message ts).
 
 ## Output
-End with a report: Quote id + total, deck URL, order ts, recommended option + net amount — each tied to evidence.
+End with a report: each Quote id + total, the deck URL, the offer URL + Slack ts, and the
+recommended option + net amount — each tied to a `tool_result` from this session.

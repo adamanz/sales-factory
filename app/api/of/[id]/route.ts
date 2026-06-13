@@ -4,6 +4,17 @@ import { offers, OfferConfig } from "@/lib/offers";
 
 // Dependency-free demo/fallback: build an offer from the latest Quotes on the demo Opportunity.
 async function demoConfig(): Promise<OfferConfig | undefined> {
+  // Bulletproof demo: pin to a known-good pair if set (bypasses the fragile latest-2 query).
+  const lean = process.env.SF_DEMO_QUOTE_LEAN, full = process.env.SF_DEMO_QUOTE_FULL;
+  if (lean && full) {
+    return {
+      account: "Acme Robotics", headline: "Your tailored options",
+      options: [
+        { quoteId: lean, label: "Lean (Land)" },
+        { quoteId: full, label: "Full (Land + Expand)", recommended: true },
+      ],
+    };
+  }
   const rows = await query<any>(
     `SELECT Id, Name, TotalPrice FROM Quote WHERE OpportunityId = '${process.env.SF_OPPORTUNITY_ID}' ORDER BY CreatedDate DESC LIMIT 2`
   );
