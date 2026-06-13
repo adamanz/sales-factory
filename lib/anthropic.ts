@@ -19,9 +19,22 @@ export async function createCallSession(opts: { memoryStoreId?: string }) {
 }
 
 export async function sendUserMessage(sessionId: string, text: string) {
-  await anthropic.beta.sessions.events.send(sessionId, {
-    events: [{ type: "user.message", content: [{ type: "text", text }] }],
-  } as any);
+  // During the live phase the agent emits custom tools (e.g. slack_post coaching), which puts the
+  // session in requires_action — only a tool result may be sent until the consumer responds. A paced
+  // transcript can race that window, so retry the user.message until the consumer clears it.
+  for (let attempt = 0; ; attempt++) {
+    try {
+      await anthropic.beta.sessions.events.send(sessionId, {
+        events: [{ type: "user.message", content: [{ type: "text", text }] }],
+      } as any);
+      return;
+    } catch (e: any) {
+      const msg = String(e?.message || e);
+      const blocked = msg.includes("waiting on responses") || msg.includes("user.tool_confirmation");
+      if (blocked && attempt < 30) { await new Promise((r) => setTimeout(r, 1500)); continue; }
+      throw e;
+    }
+  }
 }
 
 export async function defineOutcome(sessionId: string, description: string, rubricMd: string) {

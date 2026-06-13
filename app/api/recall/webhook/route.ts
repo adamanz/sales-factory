@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
 import { store } from "@/lib/store";
 import { createCallSession, sendUserMessage, defineOutcome } from "@/lib/anthropic";
-import { runConsumer } from "@/lib/consumer";
+import { runConsumer, openCallThread } from "@/lib/consumer";
 import { pushChunk, doFlush } from "@/lib/transcript";
 import fs from "fs";
 import path from "path";
@@ -19,15 +19,22 @@ export async function POST(req: NextRequest) {
   const raw = await req.text();
   if (!verify(raw, req.headers.get("x-recall-signature"))) return NextResponse.json({ error: "bad signature" }, { status: 401 });
   const event = JSON.parse(raw);
-  const botId = event?.data?.bot_id;
+  // Real-time transcript events nest the bot under data.bot.id; status events use data.bot_id.
+  const botId = event?.data?.bot?.id || event?.data?.bot_id;
+
+  // Pull speaker + spoken text from a transcript.* event payload (data.data.{participant,words}).
+  const parseTranscript = () => {
+    const d = event?.data?.data;
+    return { speaker: d?.participant?.name || "Speaker", text: d?.words?.map((w: any) => w.text).join(" ") || "" };
+  };
 
   // Debug: log every Recall event so we can verify real-time transcript delivery.
-  if (event.event === "bot.transcription") {
-    const t = event.data?.transcript;
-    const words = t?.words?.map((w: any) => w.text).join(" ") || t?.text || "";
-    console.log(`[recall] transcription bot=${botId} [${t?.speaker || "?"}] ${words}`);
+  if (event.event === "transcript.data" || event.event === "transcript.partial_data") {
+    const { speaker, text } = parseTranscript();
+    const tag = event.event === "transcript.partial_data" ? "partial" : "final";
+    console.log(`[recall] transcript.${tag} bot=${botId} [${speaker}] ${text}`);
   } else {
-    console.log(`[recall] ${event.event} bot=${botId} status=${event?.data?.status?.code || ""}`);
+    console.log(`[recall] ${event.event} bot=${botId} ${event?.data?.status?.code || ""}`);
   }
 
   switch (event.event) {
@@ -37,17 +44,18 @@ export async function POST(req: NextRequest) {
         // TODO: create Slack thread (via Slack MCP-driven priming or relay fallback) + memory store
         const session = await createCallSession({ memoryStoreId: undefined });
         store.set({ botId, sessionId: session.id, channelId: process.env.SLACK_CHANNEL_ID, opportunityId: process.env.SF_OPPORTUNITY_ID!, quoteIds: [] });
+        await openCallThread(botId, ":factory: *Sales Factory* — live sales call"); // one thread per call
         runConsumer(session.id); // open the stream before sending events (handles salesforce_op/slack_post/publish_artifact)
         await sendUserMessage(session.id, "A sales call just started. Coach live; track every pricing option discussed.");
       }
       break;
     }
-    case "bot.transcription": {
+    // Finalized utterances only (partials are for live captions, not the agent feed).
+    case "transcript.data": {
       const s = botId && store.get(botId);
       if (s?.sessionId) {
-        const t = event.data.transcript;
-        pushChunk(botId, { speaker: t?.speaker || "Speaker", text: t?.words?.map((w: any) => w.text).join(" ") || t?.text || "", ts: Date.now() },
-          (text) => sendUserMessage(s.sessionId!, text));
+        const { speaker, text } = parseTranscript();
+        if (text) pushChunk(botId, { speaker, text, ts: Date.now() }, (t) => sendUserMessage(s.sessionId!, t));
       }
       break;
     }

@@ -8,3 +8,4 @@ node_modules/
 salesforce/.sf/
 
 slack-cred.json
+tsconfig.tsbuildinfo

@@ -34,12 +34,25 @@ async function salesforceOp(input: any) {
   }
 }
 
+// Post the call's root Slack message and pin it as the one thread all later posts reply into.
+// Call once per call (from the replay/webhook entry points) before the agent starts posting.
+export async function openCallThread(botId: string, headline: string) {
+  const channel = process.env.SLACK_CHANNEL_ID;
+  if (!channel) return { ok: false, error: "SLACK_CHANNEL_ID not set", ts: null };
+  const r = await postMessage({ channel, text: headline });
+  if (r.ok) store.patch(botId, { slackThreadTs: r.ts!, channelId: r.channel });
+  return r;
+}
+
 async function slackPost(input: any, sessionId: string) {
   const state = store.bySession(sessionId);
+  // Pin to the call's thread: every agent post (coordinator or subagent) replies into the same
+  // root. state.slackThreadTs wins over any thread_ts the agent supplies so it can't start a 2nd thread.
   const r = await postMessage({
-    channel: input.channel || state?.channelId || process.env.SLACK_CHANNEL_ID!,
-    text: input.text, blocks: input.blocks, thread_ts: input.thread_ts || state?.slackThreadTs,
+    channel: state?.channelId || input.channel || process.env.SLACK_CHANNEL_ID!,
+    text: input.text, blocks: input.blocks, thread_ts: state?.slackThreadTs || input.thread_ts,
   });
+  // Fallback: if no root was opened, the first post becomes the thread root.
   if (r.ok && state && !state.slackThreadTs) store.patch(state.botId, { slackThreadTs: r.ts!, channelId: r.channel });
   return r;
 }

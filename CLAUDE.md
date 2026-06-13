@@ -15,15 +15,16 @@ Full brief: `PLAN.md`. Setup/demo: `README.md`.
 - **Relay** (this Next.js repo) is the ONLY self-hosted piece. It drives Managed Agents sessions,
   executes the Salesforce custom tool host-side, and hosts generated HTML artifacts at live URLs.
 - **Managed Agents** runs the coordinator + 4 subagents (created ONCE; sessions per call). The
-  agent does ALL Slack via the **Slack MCP** tool. Slack creds live in an Anthropic **vault**
-  (`SLACK_VAULT_ID`), attached per session via `vault_ids`.
+  agent does ALL Slack via the host-side `slack_post` custom tool (bot token — see Conventions).
+  The original Slack-MCP-over-vault (`SLACK_VAULT_ID`) path is parked: no OAuth token to mint.
 - **Salesforce** creds stay host-side (`.env.local`); the agent calls the `salesforce_op` custom
   tool and the relay executes it via `lib/salesforce.ts`. The container NEVER sees SF creds.
 
 ```
 Recall.ai ─webhooks→ relay ─sessions/events→ Managed Agents (coordinator + swarm)
-                       │ salesforce_op (host-side) → Salesforce REST
-                       │ publish_artifact → hosts /api/deck|quote/[id]  ──URL──▶ agent posts via Slack MCP
+                       │ salesforce_op    (host-side) → Salesforce REST
+                       │ slack_post       (host-side) → Slack chat.postMessage (one thread / call)
+                       │ publish_artifact → hosts /api/deck|quote/[id]  ──URL──▶ agent posts via slack_post
 ```
 
 ## Status — ✅ END-TO-END WORKING
@@ -45,6 +46,22 @@ Notes / fixed gotchas:
 - The dev server (background) can get reaped between steps — run the full test cycle as ONE background
   task (start server → replay → poll) rather than relying on a long-lived server across turns.
 
+### Recall transcript — ✅ VERIFIED LIVE (2026-06-13)
+Tested against a real Google Meet bot, full lifecycle: create bot → `in_waiting_room` → admit →
+`in_call_recording` → `done` → **post-call transcript pulled** and printed real captions.
+Tool: `npm run recall:test "<meetingUrl>"` (also `… transcript <botId>` / `… status <botId>`).
+- **Recall API uses the new `recording_config` schema** (region `us-east-1`). The old
+  `transcription_options` / `real_time_transcription` fields now return **400 "not allowed"**.
+  Bot create body: `recording_config.transcript.provider.meeting_captions` +
+  `recording_config.realtime_endpoints[{type:"webhook", url, events:["transcript.data","transcript.partial_data"]}]`.
+- **Real-time events** are `transcript.data` (final) / `transcript.partial_data` (partial); speaker at
+  `data.data.participant.name`, words at `data.data.words[].text`. `webhook/route.ts` parses these.
+- **Post-call transcript** = GET `/api/v1/bot/{id}/` → `recordings[].media_shortcuts.transcript.data.download_url`
+  (signed S3 URL, fetch without auth header) → `data.segments[]`.
+- ⚠️ Real-time delivery to our webhook is **not yet verified** — it needs a live public tunnel
+  (`PUBLIC_BASE_URL`); the trycloudflare quick-tunnel hostname goes stale on reconnect. Post-call path
+  needs no tunnel. `meeting_captions` diarization is weak for a single speaker.
+
 ## Remaining work (polish)
 1. **Offer page (`/api/of/[id]`)** — server-rendered HTML order form, **live from Salesforce** Quote
    data, recommended option highlighted, **Accept** button writes `Quote.Status=Accepted`. Agent calls
@@ -58,18 +75,28 @@ Notes / fixed gotchas:
 | `lib/salesforce.ts` | ★ org-verified REST + `createQuote`/`getCatalog`. Backs `salesforce_op`. |
 | `lib/anthropic.ts` | Managed Agents session/event helpers (beta API — verify against installed SDK). |
 | `lib/store.ts` · `transcript.ts` · `artifacts.ts` | per-bot state, transcript batching, HTML hosting. |
+| `lib/slack.ts` | `postMessage` → Slack `chat.postMessage` (bot token). Backs `slack_post`. |
+| `lib/consumer.ts` | SSE consumer: runs `salesforce_op`/`slack_post`/`publish_artifact`/`create_offer`; `openCallThread` + `slackPost` enforce one thread/call. |
 | `app/api/recall/replay/route.ts` | ★ demo spine — drives the full flow from a scripted call. |
-| `app/api/recall/webhook/route.ts` | real Recall path (has TODOs: Slack thread/memory, start consumer). |
-| `agents/sales-factory.agent.yaml` | coordinator: `salesforce_op` tool, Slack MCP, multiagent roster. |
+| `app/api/recall/webhook/route.ts` | real Recall path (opens Slack thread + starts consumer; TODO: memory store). |
+| `agents/sales-factory.agent.yaml` | coordinator: `salesforce_op` + `slack_post` tools, multiagent roster. |
 | `agents/pitch-rubric.md` | ★ the model-graded definition of "done". |
 | `scripts/fixtures/call-acme.json` | scripted multi-option demo call. |
 | `scripts/e2e.ts` | the rerunnable "test suite" (needs outcome-polling finished). |
+| `scripts/slack-test.ts` | `npm run slack:test` — Slack auth + one-thread post smoke test. |
 
 ## Conventions & gotchas (don't relearn these the hard way)
 - **Model is `claude-opus-4-8`** everywhere. Adaptive thinking only — never `budget_tokens`,
   `temperature`, `top_p`, or assistant prefills (all 400 on this model).
-- **Slack is MCP-only.** The relay must NOT call the Slack Web API. The agent posts coaching,
-  the order form, and the deck URL itself via the `slack` MCP tool. Don't reintroduce a bot token.
+- **Slack works — bot token via the relay, NOT MCP.** ✅ Verified. The agent calls the `slack_post`
+  custom tool; the relay runs it in `lib/slack.ts` (`chat.postMessage`) with `SLACK_BOT_TOKEN`
+  (`chat:write`, bot invited to `SLACK_CHANNEL_ID`). The MCP/vault path is parked (no OAuth token).
+  Smoke-test the path standalone: `npm run slack:test` (auth.test + a real root + threaded replies).
+- **One Slack thread per call.** Entry routes (`replay`/`webhook`) call `openCallThread(botId, …)`
+  to post the call's root message and pin its `ts` in `store`. `slackPost` then forces
+  `state.slackThreadTs` over any agent-supplied `thread_ts`, so the coordinator + every subagent
+  reply into that one thread and can't start a second root. Thread `ts` lives in the in-memory
+  `store` (per dev-server process) — swap `store` for KV if the relay ever runs multi-instance.
 - **Salesforce token expires.** If SF calls 401, run `npm run refresh:sf` (rewrites the token in
   `.env.local` from the `sf` CLI session — org alias `a@simple.company.partner`).
 - **SKU → PricebookEntry** mapping uses `SF_PBE_SEAT/USAGE/FDE/PREMIUM` from `.env.local`
@@ -87,6 +114,7 @@ Notes / fixed gotchas:
 npm run dev                                            # relay on :3000
 curl -XPOST localhost:3000/api/recall/replay -d '{"fixture":"call-acme"}'
 npm run e2e                                            # assert real Quote + grounding
+npm run slack:test                                     # Slack auth.test + a real one-thread post
 npm run refresh:sf                                     # refresh expired SF token
 npm run setup:agents                                   # (re)create env + agents (writes IDs to .env.local)
 ```

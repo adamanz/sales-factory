@@ -33,34 +33,65 @@ async function createBot(meetingUrl: string) {
   const r = await api("POST", "/bot/", {
     meeting_url: meetingUrl,
     bot_name: "Sales Factory Test",
-    transcription_options: { provider: "meeting_captions" },
-    real_time_transcription: { destination_url: webhook, partial_results: true },
+    recording_config: {
+      transcript: { provider: { meeting_captions: { language_code: "en" } } },
+      realtime_endpoints: [{
+        type: "webhook",
+        url: webhook,
+        events: ["transcript.data", "transcript.partial_data"],
+      }],
+    },
   });
-  console.log("create ->", r.status, JSON.stringify(r.json).slice(0, 300));
+  console.log("create ->", r.status, JSON.stringify(r.json).slice(0, 400));
   return r.json?.id as string | undefined;
 }
 
+async function getBot(botId: string) {
+  return api("GET", `/bot/${botId}/`);
+}
+
 async function status(botId: string) {
-  const r = await api("GET", `/bot/${botId}/`);
-  const code = r.json?.status_changes?.at?.(-1)?.code || r.json?.status?.code;
+  const r = await getBot(botId);
+  const code = r.json?.status_changes?.at?.(-1)?.code || r.json?.status?.code || r.json?.recordings?.at?.(-1)?.status?.code;
   console.log(`status ${botId}: ${code}  (http ${r.status})`);
   return code as string | undefined;
 }
 
-async function transcript(botId: string) {
-  // Try the documented transcript endpoint; print raw so we see the real shape.
-  const r = await api("GET", `/bot/${botId}/transcript/`);
-  console.log(`transcript ${botId} -> http ${r.status}`);
-  if (Array.isArray(r.json)) {
-    for (const seg of r.json) {
-      const who = seg.speaker || seg.participant?.name || "Speaker";
-      const words = seg.words?.map((w: any) => w.text).join(" ") || seg.text || "";
-      console.log(`  [${who}] ${words}`);
-    }
-    console.log(`(${r.json.length} segments)`);
-  } else {
-    console.log(JSON.stringify(r.json, null, 2).slice(0, 2000));
+function printSegments(data: any) {
+  const segs = Array.isArray(data) ? data : data?.segments || data?.data?.segments || data?.transcript || [];
+  if (!Array.isArray(segs) || segs.length === 0) {
+    console.log("(no segments parsed — raw):", JSON.stringify(data).slice(0, 1500));
+    return;
   }
+  for (const seg of segs) {
+    const who = seg.speaker || seg.participant?.name || `Speaker ${seg.speaker_id ?? ""}`;
+    const words = Array.isArray(seg.words) ? seg.words.map((w: any) => w.text).join(" ") : seg.text || "";
+    console.log(`  [${who}] ${words}`);
+  }
+  console.log(`(${segs.length} segments)`);
+}
+
+async function transcript(botId: string) {
+  // Preferred: GET the bot, find the transcript download URL on its recording, fetch the S3 artifact.
+  const r = await getBot(botId);
+  const recs = r.json?.recordings || [];
+  let url: string | undefined;
+  for (const rec of recs) {
+    url = rec?.media_shortcuts?.transcript?.data?.download_url || url;
+  }
+  if (url) {
+    console.log(`transcript download_url found; fetching artifact…`);
+    const t = await fetch(url); // signed S3 URL — no auth header
+    const body = await t.json().catch(() => null);
+    console.log(`artifact -> http ${t.status}`);
+    printSegments(body);
+    return;
+  }
+  // Fallback: older per-bot transcript endpoint.
+  console.log("no download_url on recording; trying /bot/{id}/transcript/ …");
+  const f = await api("GET", `/bot/${botId}/transcript/`);
+  console.log(`/transcript/ -> http ${f.status}`);
+  printSegments(f.json);
 }
 
 async function main() {
@@ -72,10 +103,12 @@ async function main() {
   if (!meetingUrl) { console.error('Pass a meeting URL: npx tsx scripts/recall-test.ts "<MEETING_URL>"'); process.exit(1); }
   const botId = await createBot(meetingUrl);
   if (!botId) { console.error("no bot id returned"); process.exit(1); }
-  console.log(`\nBOT_ID=${botId}\nPolling status (Ctrl+C to stop). Speak in the meeting to generate transcript.`);
-  console.log(`Watch real-time chunks in the dev server log (/tmp/sf-dev.log).`);
+  console.log(`\nBOT_ID=${botId}\nPolling status (Ctrl+C to stop). Admit the bot, then speak in the meeting.`);
+  console.log(`Real-time chunks (if tunnel is live) appear in /tmp/sf-dev.log as [recall] transcript.final ...`);
+  let last = "";
   for (let i = 0; i < 120; i++) {
     const code = await status(botId);
+    if (code && code !== last) last = code;
     if (code === "done" || code === "call_ended" || code === "fatal") break;
     await new Promise((r) => setTimeout(r, 5000));
   }
