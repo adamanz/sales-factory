@@ -64,7 +64,6 @@ function lineRow(li: any) {
   const amount = free ? `<span class="free">$0</span><span class="waived">100% waived</span>` : money(li.TotalPrice);
   const unit = `${money(li.UnitPrice)}${disc > 0 && !free ? ` <span class="disc">−${disc}%</span>` : ""}`;
   return `<tr>
-    <td><span class="sku">${li.Product2?.ProductCode || ""}</span></td>
     <td><div class="pname">${li.Product2?.Name || ""}</div><div class="pdesc">${li.Description || ""}</div></td>
     <td class="num">${li.Quantity}</td>
     <td class="num">${unit}</td>
@@ -83,11 +82,11 @@ function optionSection(opt: any, offerId: string, won: boolean) {
     : `<a class="btn primary" href="/api/of/${offerId}?accept=${q.Id}">Accept this proposal</a>`;
   return `<section class="card ${opt.recommended ? "rec" : ""} ${opt.accepted ? "won" : ""} ${won && !opt.accepted ? "faded" : ""}">
     ${opt.recommended ? `<div class="ribbon">Recommended</div>` : ""}
-    <div class="opt-head"><div><div class="opt-label">${opt.label || q.Name}</div><div class="opt-status">Quote ${q.Status}${q.ExpirationDate ? ` · valid through ${q.ExpirationDate}` : ""}</div></div>
+    <div class="opt-head"><div><div class="opt-label">${opt.label || q.Name}</div><div class="opt-status">${q.ExpirationDate ? `Valid through ${q.ExpirationDate}` : "Tailored proposal"}</div></div>
       <div class="opt-total">${money(q.TotalPrice)}<span class="per">/year</span></div></div>
-    <table class="lines"><thead><tr><th>SKU</th><th>Item</th><th class="num">Qty</th><th class="num">Unit</th><th class="num">Amount</th></tr></thead><tbody>${lines}</tbody>
-      <tfoot><tr><td colspan="4" class="num">Annual total</td><td class="num amt total">${money(q.TotalPrice)}</td></tr></tfoot></table>
-    <div class="actions">${cta}<a class="btn ghost" href="${sfRecordUrl(q.Id)}" target="_blank" rel="noopener">View in Salesforce →</a></div>
+    <table class="lines"><thead><tr><th>What&#39;s included</th><th class="num">Qty</th><th class="num">Unit</th><th class="num">Amount</th></tr></thead><tbody>${lines}</tbody>
+      <tfoot><tr><td colspan="3" class="num">Annual total</td><td class="num amt total">${money(q.TotalPrice)}</td></tr></tfoot></table>
+    <div class="actions">${cta}</div>
   </section>`;
 }
 
@@ -133,13 +132,13 @@ function render(account: string, headline: string | undefined, options: any[], o
   .foot{margin:30px 40px 0;color:#8a98ad;font-size:12px;border-top:1px solid var(--line);padding-top:16px}
   @media(max-width:600px){.top,.model,.card,.banner,.foot{margin-left:14px;margin-right:14px;padding-left:18px;padding-right:18px}.pdesc{max-width:none}}
 </style></head><body><div class="wrap">
-  <div class="top">${options[0] ? `<a class="sfbtn" href="${sfRecordUrl(options[0].quote.Id)}" target="_blank" rel="noopener">View in Salesforce →</a>` : ""}
-    <div class="eyebrow">Proposal for ${account}</div>
+  <div class="top">
+    <div class="eyebrow">Prepared for ${account}</div>
     <h1>${headline || (options.length > 1 ? "Your tailored options" : options[0]?.quote?.Name || "Enterprise Agreement")}</h1>
     <div class="acct">Modern AI platform — seats included, you commit to usage.</div></div>
-  ${won && wonOpt ? `<div class="banner win">🎉 <b>Closed Won</b> — ${account} accepted <b>${wonOpt.label || wonOpt.quote.Name}</b> at <b>${money(wonOpt.quote.TotalPrice)}/year</b>. Synced to the Opportunity in Salesforce.</div>` : ""}
+  ${won && wonOpt ? `<div class="banner win">🎉 <b>Closed Won</b> — ${account} accepted <b>${wonOpt.label || wonOpt.quote.Name}</b> at <b>${money(wonOpt.quote.TotalPrice)}/year</b>. Recorded in Salesforce — the Opportunity is now Closed Won and the agreed order form is on file.</div>` : ""}
   <div class="model">💡 <b>How our pricing works:</b> Platform <b>seats are free</b> (100% waived) — you commit to an annual <b>usage pool</b>, and we expand with a dedicated <b>Forward Deployed Engineer</b> and <b>Premium Support</b>. You pay for value delivered, not seats.</div>
   ${options.map((o) => optionSection(o, offerId, won)).join("")}
-  <div class="foot">Rendered live from Salesforce · ${options.map((o) => "Quote " + o.quote.Id).join(" · ")}</div>
+  <div class="foot">Prepared for ${account}${options[0]?.quote?.ExpirationDate ? ` · valid through ${options[0].quote.ExpirationDate}` : ""} · Questions? Reply to your account team.</div>
 </div></body></html>`;
 }
