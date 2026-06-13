@@ -71,7 +71,20 @@ One section per option, the recommended one highlighted, each linking to its liv
 <p align="center"><img src="docs/img/deck.png" alt="Generated HTML pitch deck — two options, recommended highlighted, battlecard, next steps" width="680"></p>
 
 ### 3 · An order form rendered live from Salesforce
-`/api/of/[id]` (also `/api/of/demo` and quote-ID-addressable `/api/of/<0Q…>`). Multi-option comparison, line-item table, recommended ribbon, and an **Accept** button that closes the loop in Salesforce. *(Shown at the top of this README.)*
+`/api/of/[id]` (also `/api/of/demo` and quote-ID-addressable `/api/of/<0Q…>`). Multi-option comparison, line-item table, recommended ribbon, and an **Accept** button. *(The default state is shown at the top of this README.)* One click closes the loop — the page reloads **Closed Won**, syncs the Opportunity, denies the other option, and files the agreed form back in Salesforce:
+
+<p align="center"><img src="docs/img/order-form-won.png" alt="The same order form after Accept — Closed Won banner, accepted option ringed, the other option marked Not selected" width="560"></p>
+
+---
+
+## In Salesforce — the Opportunity becomes a deal cockpit
+
+The factory's outputs land where the rep already lives. The demo org's **Opportunity record page** is customized into a cockpit (`salesforce/force-app/main/default/{flexipages,layouts,classes,lwc}`):
+
+- **Slack Conversations** — a custom LWC (`c:slackConversations`, backed by the `SlackChannelController` Apex over the native `SlackChannelRelatedRecord` object) lists the channel where the call was coached, with an **Open in Slack** jump-link. Its empty state reads: *"Live call coaching is posted to the team Slack channel during the call."*
+- **Decision Makers** — a `Find_Decision_Makers_at_Opportunity` flow surfaces the decision-makers at the account, right on the record.
+- **WhatsApp / LinkedIn outreach** — embedded **Unipile** components (`unipileMessageList` + hosted auth) let the rep message those contacts without leaving Salesforce.
+- **Quotes & line items** — the Quotes the swarm created (and the accepted one, synced to **Closed Won**) show up in the standard related lists.
 
 ---
 
@@ -166,6 +179,7 @@ A single `POST /api/recall/replay` of the scripted Acme Robotics call produced, 
 - **Post-call Recall ingestion** — `/api/recall/process` pulls a finished transcript from the Recall API with **no public tunnel** required.
 - **Signature verification** — Slack signing-secret HMAC + `url_verification` handshake + event dedup.
 - **Non-blocking replay + resilient sends** — replay returns a `sessionId` immediately; `sendUserMessage` retries through transient `requires_action` windows.
+- **Salesforce deal cockpit** — Slack Conversations LWC, a *Find Decision Makers* flow, and Unipile WhatsApp/LinkedIn outreach embedded on the Opportunity record page.
 - **Test/runbook surface** — `npm run slack:test`, `npm run recall:test`, plus `DEMO.md` and `SUBMISSION.md`.
 
 ---
@@ -223,14 +237,15 @@ app/api/{deck,quote}/[id]                       serve generated HTML artifacts (
 app/api/of/[id]                                 enterprise order form, rendered LIVE from Salesforce Quotes
 lib/salesforce.ts                               org-verified REST + getCatalog/createQuote (salesforce_op backend)
 lib/consumer.ts                                 SSE consumer: runs the 4 custom tools host-side; one-thread/call
+lib/accept.ts                                   shared accept loop: Accepted + deny losers + Opp sync → Closed Won + file ContentVersion + Slack reply
 lib/anthropic.ts                                Managed Agents session/event helpers (beta API)
-lib/{store,transcript,artifacts,offers,slack,recall}.ts   state · batching · HTML hosting · offers · Slack · Recall
+lib/{store,transcript,artifacts,offers,of-html,slack,recall}.ts   state · batching · HTML hosting · offers · accepted-OF html · Slack · Recall
 agents/sales-factory.agent.yaml                 coordinator: tools + multiagent roster (quote/deck/order/research)
 agents/{quote,deck,order,research}.agent.yaml   the swarm
 agents/pitch-rubric.md                          the model-graded definition of "done"
 scripts/fixtures/call-acme.json                 scripted multi-option demo call
 scripts/e2e.ts                                  the rerunnable "test suite"
-salesforce/                                     DX project: QuoteSettings, seed SKUs, Opportunity record-page
+salesforce/                                     DX project: seed SKUs + QuoteSettings · Opportunity cockpit (Slack LWC, decision-maker flow, Unipile WhatsApp)
 docs/img/, docs/_src/                           README screenshots + their source HTML (reproducible renders)
 ```
 

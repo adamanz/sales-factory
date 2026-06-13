@@ -1,0 +1,110 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Your tailored options — Acme Robotics</title><style>
+  :root{--navy:#0b1f3a;--ink:#0f1729;--mut:#5b6b85;--line:#e4e9f2;--accent:#0f766e;--accent2:#10b981;--bg:#eef2f8}
+  *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--ink);font-family:ui-sans-serif,-apple-system,"Segoe UI",Roboto,Helvetica,sans-serif;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:920px;margin:0 auto;padding:0 0 64px}
+  .top{background:linear-gradient(180deg,#0b1f3a,#0e2748);color:#fff;padding:34px 40px;border-radius:0 0 20px 20px}
+  .eyebrow{letter-spacing:.2em;text-transform:uppercase;font-size:11px;color:#8fb4d6;font-weight:700}
+  .top h1{margin:8px 0 2px;font-size:30px;font-weight:800;letter-spacing:-.02em}
+  .top .acct{color:#c7d6ea;font-size:15px}
+  .sfbtn{float:right;margin-top:4px;color:#bfe9dd;border:1px solid #1f6f57;background:#0c3a30;padding:8px 12px;border-radius:9px;text-decoration:none;font-weight:600;font-size:13px}
+  .model{margin:22px 40px 0;background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46;border-radius:14px;padding:16px 18px;font-size:14.5px;line-height:1.5}
+  .model b{color:#047857}
+  .card{position:relative;background:#fff;border:1px solid var(--line);border-radius:16px;margin:22px 40px 0;padding:24px;box-shadow:0 12px 30px -20px #0b1f3a55}
+  .card.rec{border-color:var(--accent2);box-shadow:0 0 0 1px var(--accent2),0 18px 40px -24px #0f766e66}
+  .ribbon{position:absolute;top:-12px;right:22px;background:var(--accent2);color:#04241a;font-weight:800;font-size:12px;padding:5px 12px;border-radius:999px}
+  .opt-head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;border-bottom:1px solid var(--line);padding-bottom:16px}
+  .opt-label{font-size:19px;font-weight:800} .opt-status{color:var(--mut);font-size:13px;margin-top:3px}
+  .opt-total{font-size:30px;font-weight:850;white-space:nowrap} .per{font-size:14px;color:var(--mut);font-weight:600;margin-left:4px}
+  table.lines{width:100%;border-collapse:collapse;margin-top:14px;font-size:14px}
+  .lines th{text-align:left;color:var(--mut);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.04em;padding:8px 10px;border-bottom:1px solid var(--line)}
+  .lines td{padding:12px 10px;border-bottom:1px solid #f1f4f9;vertical-align:top}
+  .num{text-align:right;white-space:nowrap} .amt{font-weight:700}
+  .sku{font-family:ui-monospace,Menlo,monospace;font-size:12px;background:#f1f4f9;border:1px solid var(--line);border-radius:6px;padding:2px 7px;color:#334}
+  .pname{font-weight:650} .pdesc{color:var(--mut);font-size:12.5px;margin-top:3px;max-width:430px;line-height:1.4}
+  .disc{color:#b45309;font-weight:700;font-size:12px}
+  .free{color:var(--accent2);font-weight:850} .waived{display:block;color:#059669;font-size:11px;font-weight:600}
+  .lines tfoot td{border-bottom:none;border-top:2px solid var(--line);padding-top:14px;font-weight:700} .total{font-size:18px;color:var(--navy)}
+  .actions{display:flex;gap:12px;margin-top:20px;flex-wrap:wrap}
+  .btn{display:inline-block;padding:12px 18px;border-radius:11px;text-decoration:none;font-weight:750;font-size:14px}
+  .btn.primary{background:var(--accent2);color:#04241a} .btn.primary:hover{filter:brightness(1.05)}
+  .btn.ghost{background:#fff;color:var(--navy);border:1px solid var(--line)}
+  .accepted{display:inline-block;padding:12px 18px;border-radius:11px;background:#ecfdf5;border:1px solid #6ee7b7;color:#047857;font-weight:800}
+  .declined{display:inline-block;padding:12px 18px;border-radius:11px;background:#f3f4f6;border:1px solid #e4e9f2;color:#8a98ad;font-weight:700}
+  .card.faded{opacity:.62} .card.won{border-color:var(--accent2);box-shadow:0 0 0 2px var(--accent2),0 18px 44px -22px #0f766e88}
+  .banner{margin:22px 40px 0;background:#0e2748;color:#bbf7d0;border-radius:12px;padding:14px 18px;font-weight:600}
+  .banner.win{background:linear-gradient(90deg,#065f46,#10b981);color:#ecfdf5;font-size:16px;padding:18px 22px}
+  .banner.win b{color:#fff}
+  .foot{margin:30px 40px 0;color:#8a98ad;font-size:12px;border-top:1px solid var(--line);padding-top:16px}
+  @media(max-width:600px){.top,.model,.card,.banner,.foot{margin-left:14px;margin-right:14px;padding-left:18px;padding-right:18px}.pdesc{max-width:none}}
+</style></head><body><div class="wrap">
+  <div class="top"><a class="sfbtn" href="#" target="_blank" rel="noopener">View in Salesforce →</a>
+    <div class="eyebrow">Proposal for Acme Robotics</div>
+    <h1>Your tailored options</h1>
+    <div class="acct">Modern AI platform — seats included, you commit to usage.</div></div>
+  <div class="banner win">🎉 <b>Closed Won</b> — Acme Robotics accepted <b>Full (Land + Expand)</b> at <b>$205,000/year</b>. Synced to the Opportunity in Salesforce.</div>
+  <div class="model">💡 <b>How our pricing works:</b> Platform <b>seats are free</b> (100% waived) — you commit to an annual <b>usage pool</b>, and we expand with a dedicated <b>Forward Deployed Engineer</b> and <b>Premium Support</b>. You pay for value delivered, not seats.</div>
+
+  <section class="card faded">
+    <div class="opt-head"><div><div class="opt-label">Lean (Land)</div><div class="opt-status">Quote Denied · valid through 2026-07-31</div></div>
+      <div class="opt-total">$100,000<span class="per">/year</span></div></div>
+    <table class="lines"><thead><tr><th>SKU</th><th>Item</th><th class="num">Qty</th><th class="num">Unit</th><th class="num">Amount</th></tr></thead><tbody>
+      <tr>
+        <td><span class="sku">SKU-USAGE</span></td>
+        <td><div class="pname">Usage Pool</div><div class="pdesc">Committed annual AI usage — $1,000 credit blocks. This is what you actually pay for.</div></td>
+        <td class="num">100</td>
+        <td class="num">$1,000</td>
+        <td class="num amt">$100,000</td>
+      </tr>
+      <tr>
+        <td><span class="sku">SKU-SEAT</span></td>
+        <td><div class="pname">Platform Seat</div><div class="pdesc">40 users — given away free to land the deal.</div></td>
+        <td class="num">40</td>
+        <td class="num">$1,500</td>
+        <td class="num amt"><span class="free">$0</span><span class="waived">100% waived</span></td>
+      </tr>
+      </tbody>
+      <tfoot><tr><td colspan="4" class="num">Annual total</td><td class="num amt total">$100,000</td></tr></tfoot></table>
+    <div class="actions"><div class="declined">Not selected</div><a class="btn ghost" href="#" target="_blank" rel="noopener">View in Salesforce →</a></div>
+  </section>
+
+  <section class="card rec won">
+    <div class="ribbon">Recommended</div>
+    <div class="opt-head"><div><div class="opt-label">Full (Land + Expand)</div><div class="opt-status">Quote Accepted · valid through 2026-07-31</div></div>
+      <div class="opt-total">$205,000<span class="per">/year</span></div></div>
+    <table class="lines"><thead><tr><th>SKU</th><th>Item</th><th class="num">Qty</th><th class="num">Unit</th><th class="num">Amount</th></tr></thead><tbody>
+      <tr>
+        <td><span class="sku">SKU-USAGE</span></td>
+        <td><div class="pname">Usage Pool</div><div class="pdesc">Committed annual AI usage — $1,000 credit blocks.</div></td>
+        <td class="num">120</td>
+        <td class="num">$1,000</td>
+        <td class="num amt">$120,000</td>
+      </tr>
+      <tr>
+        <td><span class="sku">SKU-FDE</span></td>
+        <td><div class="pname">Forward Deployed Engineer</div><div class="pdesc">Embedded engineer for one quarter — integrate the platform with your internal tools, fast.</div></td>
+        <td class="num">1</td>
+        <td class="num">$60,000</td>
+        <td class="num amt">$60,000</td>
+      </tr>
+      <tr>
+        <td><span class="sku">SKU-PREMIUM</span></td>
+        <td><div class="pname">Premium Support</div><div class="pdesc">Annual premium support tier for the rollout.</div></td>
+        <td class="num">1</td>
+        <td class="num">$25,000</td>
+        <td class="num amt">$25,000</td>
+      </tr>
+      <tr>
+        <td><span class="sku">SKU-SEAT</span></td>
+        <td><div class="pname">Platform Seat</div><div class="pdesc">40 users — given away free to land the deal.</div></td>
+        <td class="num">40</td>
+        <td class="num">$1,500</td>
+        <td class="num amt"><span class="free">$0</span><span class="waived">100% waived</span></td>
+      </tr>
+      </tbody>
+      <tfoot><tr><td colspan="4" class="num">Annual total</td><td class="num amt total">$205,000</td></tr></tfoot></table>
+    <div class="actions"><div class="accepted">✓ Accepted — Closed Won</div><a class="btn ghost" href="#" target="_blank" rel="noopener">View in Salesforce →</a></div>
+  </section>
+
+  <div class="foot">Rendered live from Salesforce · Quote 0Q0am000002hzS5CAI · Quote 0Q0am000002hzThCAI</div>
+</div></body></html>
