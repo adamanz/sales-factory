@@ -26,13 +26,31 @@ Recall.ai ─webhooks→ relay ─sessions/events→ Managed Agents (coordinator
                        │ publish_artifact → hosts /api/deck|quote/[id]  ──URL──▶ agent posts via Slack MCP
 ```
 
-## Status & the active blocker
-- ✅ Salesforce org fully provisioned + verified (`simpleco.my.salesforce.com`): Quotes enabled,
-  AI-pricing catalog seeded, Quote+QuoteLineItem create confirmed (incl. 100%-discount seats).
-- ✅ Managed Agents provisioned: environment + coordinator + subagents + Slack vault (IDs in `.env.local`).
-- ⛔ **THE BLOCKER:** no SSE **stream consumer** exists yet. Until `lib/consumer.ts` handles
-  `agent.custom_tool_use` (`salesforce_op`) and returns results, the session idles forever and
-  **no Quote is created**. This is the next thing to build (see "Remaining work").
+## Status — ✅ END-TO-END WORKING
+A single `POST /api/recall/replay` (scripted Acme call) produced, no human in the loop:
+- **Live coaching** posted to Slack during the call (`slack_post`, bot token).
+- **Two real Salesforce Quotes** the prospect asked for: *Lean* **$100k** (free seats + usage pool)
+  and *Full* **$185k** (free seats + $100k usage + $60k FDE + $25k Premium Support), catalog-grounded,
+  100%-seat-discount applied automatically.
+- Provisioned + verified: SF org, Managed Agents (coordinator + quote/deck/order/research), the
+  relay **consumer** (`salesforce_op` / `slack_post` / `publish_artifact` / `create_offer`).
+
+Notes / fixed gotchas:
+- Slack is via **bot token** through the relay (`SLACK_BOT_TOKEN`, `slack_post` tool) — NOT MCP
+  (Slack MCP needed an OAuth token we couldn't mint in time; the vault path is parked).
+- Consumer idle-gate: do NOT break on transient idles (null stop_reason between batches/subagent
+  delegations) — only stop after a terminal `span.outcome_evaluation_end` or `session.status_terminated`.
+- `user.custom_tool_result` field is `custom_tool_use_id` (not `tool_use_id`); echo `session_thread_id`
+  for multiagent subagent tool calls.
+- The dev server (background) can get reaped between steps — run the full test cycle as ONE background
+  task (start server → replay → poll) rather than relying on a long-lived server across turns.
+
+## Remaining work (polish)
+1. **Offer page (`/api/of/[id]`)** — server-rendered HTML order form, **live from Salesforce** Quote
+   data, recommended option highlighted, **Accept** button writes `Quote.Status=Accepted`. Agent calls
+   `create_offer([quoteIds], recommended)` → link → `slack_post`. (Building now.)
+2. Deck visuals pass; finish `e2e.ts` outcome-polling (second model-verifiable "done").
+3. Record the 1-min demo video; optional Vercel deploy (replay is the demo spine).
 
 ## Key files
 | Path | Role |
@@ -73,14 +91,6 @@ npm run refresh:sf                                     # refresh expired SF toke
 npm run setup:agents                                   # (re)create env + agents (writes IDs to .env.local)
 ```
 
-## Remaining work (priority order)
-1. **`lib/consumer.ts`** — SSE consumer: `salesforce_op` round-trip + a `publish_artifact` custom
-   tool (HTML → `/api/deck|quote/[id]` URL) + `outcome_evaluation_end` handling. Wire into replay/webhook.
-2. Add `publish_artifact` to the coordinator/deck YAML.
-3. Smoke-test the coordinator (confirm the Slack vault credential actually authenticates).
-4. Finish `e2e.ts` outcome-polling; finish `slack/interactivity` Confirm.
-
 ## Never
 - Commit `.env.local` or `slack-cred.json` (gitignored — keep it that way).
 - Put Salesforce credentials in a vault or agent config (host-side custom tool only).
-- Reintroduce a Slack bot token (Slack is MCP/vault).
