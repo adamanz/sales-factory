@@ -51,6 +51,12 @@ function publishArtifact(input: any) {
 }
 
 export async function runConsumer(sessionId: string) {
+  // Stay alive through the whole call: handle every custom tool, and only stop once
+  // the outcome has actually completed (or the session terminates). Do NOT break on
+  // transient idles — the session idles repeatedly between transcript batches and
+  // between subagent delegations, often with a null stop_reason.
+  let outcomeDone = false;
+  const TERMINAL = new Set(["satisfied", "failed", "max_iterations_reached"]);
   try {
     const stream: any = await (anthropic as any).beta.sessions.events.stream(sessionId);
     for await (const ev of stream) {
@@ -65,11 +71,13 @@ export async function runConsumer(sessionId: string) {
         await sendCustomToolResult(sessionId, ev.id, result, ev.session_thread_id);
         console.log(`[consumer] ${ev.name} ->`, JSON.stringify(result).slice(0, 200));
       } else if (ev.type === "span.outcome_evaluation_end") {
+        if (TERMINAL.has(ev.result)) outcomeDone = true;
         console.log(`[consumer] outcome: ${ev.result} — ${String(ev.explanation || "").slice(0, 160)}`);
       } else if (ev.type === "session.status_terminated") {
         break;
       } else if (ev.type === "session.status_idle") {
-        if (ev.stop_reason?.type !== "requires_action") break;
+        // Only stop once the outcome is done and the agent is genuinely waiting (not mid-tool).
+        if (outcomeDone && ev.stop_reason?.type !== "requires_action") break;
       }
     }
   } catch (e) { console.error("[consumer] error", e); }
