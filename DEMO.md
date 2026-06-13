@@ -29,7 +29,7 @@ npm run slack:test      # should post a message into #sales-bot
 ```
 
 If A–E all pass, you are go. The two clean quotes already on the Opportunity are:
-- **Full (Land + Expand) — $205,000** (`0Q0am000002hzThCAI`) → gets the Recommended ribbon
+- **Full (Land + Expand) — $185,000** (`0Q0am000002hzThCAI`) → gets the Recommended ribbon
 - **Lean (Land) — $100,000** (`0Q0am000002hzS5CAI`)
 
 ---
@@ -73,7 +73,7 @@ Point at: **two** Quotes (Lean + Full), the **QuoteLineItems** — seats at **10
 ---
 ## 4. The offer page — the close (≈15s) — Tab T2
 
-Refresh `http://localhost:3000/api/of/demo`. Show: two cards rendered **live from Salesforce**, the **$205,000 Full** option with the **Recommended** ribbon, seats shown as **$0**, and the **Accept** button.
+Refresh `http://localhost:3000/api/of/demo`. Show: two cards rendered **live from Salesforce**, the **$185,000 Full** option with the **Recommended** ribbon, seats shown as **$0**, and the **Accept** button.
 
 Click **Accept** on the Full option. The page reloads with the green "🎉 locked in" banner.
 
@@ -111,5 +111,5 @@ The rubric grades the agent's deliverables; e2e asserts the grounded Salesforce 
 | Slack posts never appear | bot not in #sales-bot | `/invite` the bot, retest `npm run slack:test` |
 | /api/of/demo 500 or "Offer not found" | SF token expired | `npm run refresh:sf`, refresh |
 | Accept click does nothing | SF token expired (catch is silent) | `npm run refresh:sf`, re-click |
-| Wrong/duplicate quotes on offer page | a partial replay re-run added orphans | don't re-run before demo; use the clean latest-2 ($205k + $100k) |
+| Wrong/duplicate quotes on offer page | a partial replay re-run added orphans | don't re-run before demo; use the clean latest-2 ($185k + $100k) |
 | Public link 404/530 | trycloudflare quick tunnel dead | use localhost for the demo, or re-freeze PUBLIC_BASE_URL |
