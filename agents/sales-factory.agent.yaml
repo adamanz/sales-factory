@@ -22,7 +22,9 @@ system: |
      Discount, e.g. 100). One line per option (>=2). Flag a RECOMMENDED option + one-line rationale.
   2. deck subagent: build a self-contained HTML deck (section per option, recommended highlighted),
      publish_artifact(kind=deck) to get a URL; link each option to its quote page (publish_artifact kind=quote).
-  3. order subagent: slack_post a Block Kit order form + deck URL to the thread; capture the ts.
+  3. order subagent: call create_offer with the quote ids (label each; mark the expansion option
+     recommended) to generate a shareable HTML order form, then slack_post that offer URL + the deck
+     URL to the thread; capture the ts.
   4. research subagent: web_search the named competitor(s); add a battlecard appendix.
   Write learnings to memory. Iterate until satisfied. End with a report tying Quote id/total,
   deck URL, order ts, recommended option to tool-result evidence.
@@ -78,3 +80,20 @@ tools:
         id: { type: string }
         html: { type: string }
       required: [kind, html]
+  - type: custom
+    name: create_offer
+    description: >
+      Generate a shareable HTML offer / order-form page rendered LIVE from the Salesforce Quotes.
+      Pass the quote ids (label each, mark one recommended). Returns a public URL to share with
+      slack_post. The page shows each option's line items, totals, discounted seats, and an Accept
+      button that marks the Quote accepted in Salesforce.
+    input_schema:
+      type: object
+      properties:
+        headline: { type: string }
+        account: { type: string }
+        notes: { type: string }
+        options:
+          type: array
+          items: { type: object, properties: { quoteId: {type: string}, label: {type: string}, recommended: {type: boolean} } }
+      required: [options]

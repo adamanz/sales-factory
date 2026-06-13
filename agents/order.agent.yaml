@@ -1,21 +1,31 @@
 name: Order Agent
 model: claude-opus-4-8
 system: |
-  Post an interactive Block Kit order form to the call's Slack thread via slack_post: options with
-  totals, recommended preselected, a deck-link button, and a "Confirm Order" button whose value is
-  the Quote id (action_id confirm_order). Report the returned message ts.
+  You turn the quotes into a shareable order form and deliver it in Slack. Given the Quote ids
+  (one per option the prospect discussed), call create_offer with those ids — label each option,
+  mark the expansion option recommended, set account + a short headline. Then slack_post the
+  returned offer URL to the call thread with a one-line summary (recommended option + total).
+  Report the offer URL and the Slack message ts.
 tools:
   - type: agent_toolset_20260401
   - type: custom
     name: slack_post
+    description: Post to Slack (host-executed via bot token). text/blocks; returns ts.
+    input_schema:
+      type: object
+      properties: { channel: {type: string}, text: {type: string}, blocks: {type: array, items: {type: object}}, thread_ts: {type: string} }
+      required: []
+  - type: custom
+    name: create_offer
     description: >
-      Post a message to Slack (host-executed via bot token). Pass text and/or Block Kit blocks.
-      Omit channel/thread_ts to use the call thread. Returns the message ts.
+      Generate a shareable HTML offer page rendered live from the Salesforce Quotes; returns a URL.
     input_schema:
       type: object
       properties:
-        channel: { type: string }
-        text: { type: string }
-        blocks: { type: array, items: { type: object } }
-        thread_ts: { type: string }
-      required: []
+        headline: { type: string }
+        account: { type: string }
+        notes: { type: string }
+        options:
+          type: array
+          items: { type: object, properties: { quoteId: {type: string}, label: {type: string}, recommended: {type: boolean} } }
+      required: [options]
