@@ -18,12 +18,26 @@ async function demoConfig(): Promise<OfferConfig | undefined> {
 
 // Server-rendered offer / order form, LIVE from Salesforce. GET /api/of/[id]
 // ?accept=<quoteId> marks that Quote accepted in Salesforce and re-renders.
+// Self-contained offer encoded in the URL (?ids=ID1,ID2&rec=ID2) so links survive server
+// restarts (in-memory store resets) and render on any deployment with no shared store.
+function configFromIds(sp: URLSearchParams): OfferConfig {
+  const ids = (sp.get("ids") || "").split(",").map((s) => s.trim()).filter(Boolean);
+  const rec = sp.get("rec");
+  return {
+    account: sp.get("account") || undefined,
+    headline: sp.get("headline") || undefined,
+    notes: sp.get("notes") || undefined,
+    options: ids.map((quoteId) => ({ quoteId, recommended: quoteId === rec })),
+  };
+}
+
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const cfg = offers.get(id) || (id === "demo" ? await demoConfig() : undefined);
+  const sp = new URL(req.url).searchParams;
+  const cfg = offers.get(id) || (sp.get("ids") ? configFromIds(sp) : id === "demo" ? await demoConfig() : undefined);
   if (!cfg) return new Response("Offer not found", { status: 404 });
 
-  const accept = new URL(req.url).searchParams.get("accept");
+  const accept = sp.get("accept");
   let acceptedId: string | null = null;
   if (accept) {
     try { await update("Quote", accept, { Status: "Accepted" }); acceptedId = accept; } catch (e) { /* show page anyway */ }
