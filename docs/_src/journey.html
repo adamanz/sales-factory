@@ -1,0 +1,117 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"/>
+<title>User journey — Sales Factory</title><style>
+  *{box-sizing:border-box}
+  body{margin:0;background:#fbfcfe;color:#0f1729;font-family:ui-sans-serif,-apple-system,"Segoe UI",Roboto,Helvetica,sans-serif;-webkit-font-smoothing:antialiased}
+  .canvas{width:1200px;margin:0 auto;padding:34px 30px 40px}
+  .head{text-align:center;margin-bottom:8px}
+  .head h1{margin:0;font-size:24px;font-weight:850;letter-spacing:-.02em}
+  .head p{margin:6px 0 0;color:#5b6b85;font-size:14px}
+  .row{display:grid;grid-template-columns:repeat(3,1fr);gap:0;align-items:stretch}
+  .cell{position:relative;padding:22px 22px}
+  .arrow{position:absolute;top:50%;right:-9px;width:18px;height:18px;transform:translateY(-50%) rotate(45deg);border-top:3px solid #10b981;border-right:3px solid #10b981;z-index:2}
+  .down{position:absolute;bottom:-9px;left:50%;width:18px;height:18px;transform:translateX(-50%) rotate(135deg);border-top:3px solid #10b981;border-right:3px solid #10b981;z-index:2}
+  .card{height:100%;background:#fff;border:1px solid #e4e9f2;border-radius:16px;padding:16px 16px 18px;box-shadow:0 10px 26px -22px #0b1f3a55}
+  .top{display:flex;align-items:center;gap:9px;margin-bottom:12px}
+  .num{flex:0 0 26px;height:26px;border-radius:50%;background:#0b1f3a;color:#fff;font-weight:850;font-size:13px;display:flex;align-items:center;justify-content:center}
+  .who{font-size:10.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#0f766e;background:#ecfdf5;border:1px solid #a7f3d0;border-radius:999px;padding:3px 9px}
+  .ttl{font-size:15.5px;font-weight:800;margin:0 0 3px}
+  .sub{font-size:12.7px;color:#5b6b85;line-height:1.45;margin:0 0 12px;min-height:36px}
+  /* skeleton screen */
+  .screen{background:#f4f7fb;border:1px solid #e4e9f2;border-radius:10px;padding:11px;height:122px;display:flex;flex-direction:column;gap:7px;overflow:hidden}
+  .scr-h{display:flex;align-items:center;gap:6px;margin-bottom:1px}
+  .dot{width:7px;height:7px;border-radius:50%;background:#cbd5e6}
+  .chip{height:9px;border-radius:5px;background:#cdd9ea}
+  .bar{height:8px;border-radius:5px;background:#dde5f0}
+  .bar.s{width:55%} .bar.m{width:78%} .bar.l{width:92%}
+  .tag{height:9px;width:34%;border-radius:5px;background:#bfe3d6}
+  .tagb{height:9px;width:46%;border-radius:5px;background:#cfe0f3}
+  .pill2{height:18px;width:62px;border-radius:6px;background:#10b981;margin-top:auto;align-self:flex-end}
+  .pill2.ghost{background:#cdd9ea}
+  .minirow{display:flex;gap:6px}
+  .minibox{flex:1;height:30px;border-radius:7px;background:#dde5f0;border:1px dashed #b9c6dc}
+  .minibox.hot{background:#d6f3e8;border-color:#84d8bb}
+  .bubble{align-self:flex-start;background:#eef3fa;border-radius:9px;padding:6px 8px;display:flex;flex-direction:column;gap:5px;width:84%}
+  .bubble.r{align-self:flex-end;background:#e7f5ee}
+  .doc{display:flex;gap:7px;height:100%}
+  .doc .pg{flex:1;background:#fff;border:1px solid #e0e7f1;border-radius:7px;padding:7px;display:flex;flex-direction:column;gap:5px}
+  .badge{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:800;color:#0f766e}
+  .sf{height:9px;width:50%;border-radius:5px;background:#9fd9f5}
+  .lane{margin-top:18px;display:flex;justify-content:center;gap:8px;flex-wrap:wrap}
+  .lane .k{font-size:11.5px;color:#5b6b85;background:#fff;border:1px solid #e4e9f2;border-radius:999px;padding:5px 11px}
+  .lane .k b{color:#0f1729}
+</style></head><body>
+<div class="canvas">
+  <div class="head"><h1>User journey — call in, deliverables out</h1>
+    <p>No human touches a CRM. The rep talks; the factory ships the quote, deck, and order form — and self-verifies.</p></div>
+
+  <div class="row">
+    <!-- 1 -->
+    <div class="cell"><div class="arrow"></div><div class="card">
+      <div class="top"><span class="num">1</span><span class="who">Rep · Slack</span></div>
+      <div class="ttl">Start a call</div>
+      <div class="sub">Rep drops a Meet / Zoom / Teams link in the channel (or <code>POST /api/recall/replay</code>).</div>
+      <div class="screen"><div class="scr-h"><span class="dot"></span><div class="chip" style="width:40%"></div></div>
+        <div class="bubble r"><div class="bar m"></div><div class="tagb" style="width:60%;background:#bcd6f2"></div></div>
+        <div class="bar s"></div></div>
+    </div></div>
+    <!-- 2 -->
+    <div class="cell"><div class="arrow"></div><div class="card">
+      <div class="top"><span class="num">2</span><span class="who">Recall.ai</span></div>
+      <div class="ttl">Bot joins &amp; listens</div>
+      <div class="sub">A Recall bot joins the meeting; live captions stream to the relay, batched into speaker turns.</div>
+      <div class="screen"><div class="scr-h"><span class="dot"></span><span class="dot"></span><div class="chip" style="width:30%"></div></div>
+        <div class="minirow"><div class="minibox"></div><div class="minibox hot"></div><div class="minibox"></div></div>
+        <div class="bar l"></div><div class="bar m"></div></div>
+    </div></div>
+    <!-- 3 -->
+    <div class="cell"><div class="down"></div><div class="card">
+      <div class="top"><span class="num">3</span><span class="who">Coordinator agent</span></div>
+      <div class="ttl">Live coaching</div>
+      <div class="sub">On an objection, pricing Q, competitor, or buying signal — one short nudge to the thread.</div>
+      <div class="screen">
+        <div class="bubble"><div class="tag"></div><div class="bar l"></div></div>
+        <div class="bubble"><div class="tag" style="background:#e6c69a"></div><div class="bar m"></div></div>
+        <div class="bubble"><div class="tag" style="background:#a9dcc0"></div><div class="bar s"></div></div>
+      </div>
+    </div></div>
+  </div>
+
+  <div class="row" style="margin-top:30px">
+    <!-- 6 (under 3, reversed row for snake flow) -->
+    <div class="cell"><div class="card">
+      <div class="top"><span class="num">6</span><span class="who">Buyer · Salesforce</span></div>
+      <div class="ttl">Buyer accepts</div>
+      <div class="sub">One click on the order form writes <b>Quote.Status = Accepted</b> back to Salesforce. Loop closed.</div>
+      <div class="screen"><div class="scr-h"><div class="chip" style="width:50%"></div></div>
+        <div class="bar l"></div><div class="bar m"></div>
+        <div class="badge">✓ Accepted</div><div class="sf"></div>
+        <div class="pill2"></div></div>
+    </div></div>
+    <!-- 5 -->
+    <div class="cell"><div class="arrow" style="left:-9px;right:auto;transform:translateY(-50%) rotate(-135deg)"></div><div class="card">
+      <div class="top"><span class="num">5</span><span class="who">Posted to thread</span></div>
+      <div class="ttl">Deliverables land</div>
+      <div class="sub">Deck link + an interactive order-form card (Accept per option) drop into the same Slack thread.</div>
+      <div class="screen"><div class="doc">
+        <div class="pg"><div class="bar l"></div><div class="bar m"></div><div class="bar s"></div><div class="pill2 ghost" style="width:40px;height:14px"></div></div>
+        <div class="pg" style="border-color:#84d8bb"><div class="bar l"></div><div class="bar m"></div><div class="bar s"></div><div class="pill2" style="width:40px;height:14px"></div></div>
+      </div></div>
+    </div></div>
+    <!-- 4 -->
+    <div class="cell"><div class="arrow" style="left:-9px;right:auto;transform:translateY(-50%) rotate(-135deg)"></div><div class="card">
+      <div class="top"><span class="num">4</span><span class="who">Swarm · 4 subagents</span></div>
+      <div class="ttl">Call ends → build</div>
+      <div class="sub"><b>quote</b> · <b>deck</b> · <b>order</b> · <b>research</b> fan out: real SF Quotes, HTML deck, order form, battlecard.</div>
+      <div class="screen"><div class="scr-h"><div class="chip" style="width:35%;background:#bfe3d6"></div></div>
+        <div class="minirow"><div class="minibox hot"></div><div class="minibox hot"></div></div>
+        <div class="minirow"><div class="minibox hot"></div><div class="minibox hot"></div></div></div>
+    </div></div>
+  </div>
+
+  <div class="lane">
+    <span class="k"><b>Relay</b> (Next.js) — only self-hosted piece; runs the agent's tools host-side</span>
+    <span class="k"><b>Credentials</b> never leave the host — the agent never sees SF or Slack tokens</span>
+    <span class="k">↻ Swarm self-grades against <b>pitch-rubric.md</b> until <b>satisfied</b></span>
+  </div>
+</div>
+</body></html>

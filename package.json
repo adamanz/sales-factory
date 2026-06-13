@@ -8,6 +8,8 @@
     "start": "next start",
     "e2e": "tsx scripts/e2e.ts",
     "refresh:sf": "tsx scripts/refresh-sf.ts",
+    "demo:build": "tsx --env-file=.env.local scripts/demo-build.ts",
+    "demo:reset": "tsx --env-file=.env.local scripts/demo-reset.ts",
     "recall:test": "tsx scripts/recall-test.ts",
     "slack:test": "tsx --env-file=.env.local scripts/slack-test.ts",
     "setup:agents": "tsx scripts/setup-agents.ts",
@@ -20,6 +22,7 @@
     "react-dom": "^19.2.7"
   },
   "devDependencies": {
+    "@slack/cli-hooks": "^1.3.3",
     "@types/node": "^25.9.3",
     "@types/react": "^19.2.17",
     "tsx": "^4.22.4",

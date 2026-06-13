@@ -67,7 +67,7 @@ Tool: `npm run recall:test "<meetingUrl>"` (also `… transcript <botId>` / `…
    data, recommended option highlighted, **Accept** button writes `Quote.Status=Accepted`. Agent calls
    `create_offer([quoteIds], recommended)` → link → `slack_post`. (Building now.)
 2. Deck visuals pass; finish `e2e.ts` outcome-polling (second model-verifiable "done").
-3. Record the 1-min demo video; optional Vercel deploy (replay is the demo spine).
+3. Record the 1-min demo video; deploy to Railway (see **Production / deploy**) — replay is the demo spine.
 
 ## Key files
 | Path | Role |
@@ -118,6 +118,61 @@ npm run slack:test                                     # Slack auth.test + a rea
 npm run refresh:sf                                     # refresh expired SF token
 npm run setup:agents                                   # (re)create env + agents (writes IDs to .env.local)
 ```
+
+## Production / deploy (Railway)
+**Host = Railway (persistent container).** This app is a **stateful, long-running server**: the
+relay opens an SSE stream to Anthropic (`runConsumer`) that lives for *minutes* per call, and
+`store`/`artifacts`/`offers` are **in-memory Maps** that the `/api/deck|quote|of/[id]` routes serve.
+That rules out serverless: on **Vercel/Cloudflare** the consumer is frozen after the HTTP response
+and in-memory artifacts aren't shared across instances (`/api/deck/[id]` returns empty) — they'd
+need KV/Blob + a durable worker (hours of rework). Railway runs `next start` as one persistent
+process, so it "just works" with zero code changes. **Single instance only** (`replicas=1`) — the
+in-memory state can't shard; **state resets on every redeploy/restart**, so re-run a replay after deploy.
+
+Build is verified clean: `npm run build` → Next 16 (Turbopack), TS passes, all routes present.
+
+### Deploy steps
+```bash
+# 0. one-time: install/update the Railway CLI, then authenticate (interactive browser).
+#    Installed via npm here (~/.npm-global/bin/railway). Verified on v5.12.1 (2026-06-13).
+npm install -g @railway/cli@latest        # update; check with `railway --version`
+railway login
+
+# 1. create project + service (run from repo root)
+railway init -n sales-factory
+
+# 2. push env vars (Railway stores secrets — .env.local is NOT in the image/repo).
+#    Set every server-side var from .env.local. Easiest: loop non-empty, non-comment lines:
+while IFS= read -r l; do case "$l" in ''|\#*) ;; *) railway variables --set "$l";; esac; done < .env.local
+#    NOTE: leave PUBLIC_BASE_URL out / set it AFTER step 4 (we don't know the domain yet).
+
+# 3. deploy (uploads working dir, builds + starts remotely)
+railway up
+
+# 4. generate a public HTTPS domain
+railway domain                       # prints https://<name>.up.railway.app
+
+# 5. point the app at its own URL, then redeploy so it takes effect
+railway variables --set "PUBLIC_BASE_URL=https://<name>.up.railway.app"
+railway up
+
+# 6. smoke-test the live URL
+curl https://<name>.up.railway.app/api/health
+curl -XPOST https://<name>.up.railway.app/api/recall/replay -d '{"fixture":"call-acme"}'
+```
+
+### After deploy — repoint the external webhooks at the Railway URL
+- **Recall**: bot create sends `realtime_endpoints[].url = $PUBLIC_BASE_URL/api/recall/webhook`, so it
+  follows `PUBLIC_BASE_URL` automatically — no dashboard change needed (kills the cloudflared tunnel).
+- **Slack**: set the app's **Interactivity request URL** to `https://<name>.up.railway.app/api/slack/interactivity`
+  (api.slack.com/apps → your app → Interactivity & Shortcuts) so the **Confirm/Accept** button works.
+
+### Prod gotchas
+- `next start` listens on `$PORT` (Railway injects it) — no `-p` flag needed.
+- **SF token still expires** in prod — `salesforce_op` 401s mean the token in Railway vars is stale;
+  refresh locally (`npm run refresh:sf`) and `railway variables --set "SALESFORCE_ACCESS_TOKEN=…"`.
+- Agents are created ONCE and live in Anthropic (IDs in env) — deploying does NOT recreate them.
+- A redeploy wipes in-memory `store`/`artifacts`/`offers`; old deck/quote/offer URLs 404 after a restart.
 
 ## Never
 - Commit `.env.local` or `slack-cred.json` (gitignored — keep it that way).

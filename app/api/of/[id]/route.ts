@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
-import { query, update } from "@/lib/salesforce";
+import { query } from "@/lib/salesforce";
 import { offers, OfferConfig } from "@/lib/offers";
+import { acceptOffer } from "@/lib/accept";
 
 const SF = () => process.env.SALESFORCE_INSTANCE_URL!;
 const sfRecordUrl = (quoteId: string) => `${SF()}/lightning/r/Quote/${quoteId}/view`;
@@ -35,7 +36,13 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 
   const accept = sp.get("accept");
   let acceptedId: string | null = null;
-  if (accept) { try { await update("Quote", accept, { Status: "Accepted" }); acceptedId = accept; } catch {} }
+  // Full loop: mark Accepted + deny the other options + sync Opp + advance stage to Closed Won
+  // + file the agreed OF in SF + reply in the Slack thread. denyQuoteIds is passed explicitly so
+  // the demo path (where the offer config isn't stored in `offers`) still denies the loser.
+  if (accept) {
+    const denyQuoteIds = cfg.options.map((o) => o.quoteId).filter((qid) => qid !== accept);
+    try { const r = await acceptOffer(accept, { offerId: id, source: "of_page", denyQuoteIds }); if (r.ok) acceptedId = accept; } catch {}
+  }
 
   const ids = cfg.options.map((o) => `'${o.quoteId}'`).join(",");
   const rows = await query<any>(
@@ -47,7 +54,8 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   const byId: Record<string, any> = Object.fromEntries(rows.map((r) => [r.Id, r]));
   const options = cfg.options.map((o) => ({ ...o, quote: byId[o.quoteId], accepted: o.quoteId === acceptedId || byId[o.quoteId]?.Status === "Accepted" })).filter((o) => o.quote);
   const account = cfg.account || options[0]?.quote?.Opportunity?.Account?.Name || "Your team";
-  return new Response(render(account, cfg.headline, options, id, !!acceptedId), { headers: { "content-type": "text/html; charset=utf-8" } });
+  const won = options.some((o) => o.accepted);
+  return new Response(render(account, cfg.headline, options, id, won), { headers: { "content-type": "text/html; charset=utf-8" } });
 }
 
 function lineRow(li: any) {
@@ -64,13 +72,16 @@ function lineRow(li: any) {
   </tr>`;
 }
 
-function optionSection(opt: any, offerId: string) {
+function optionSection(opt: any, offerId: string, won: boolean) {
   const q = opt.quote;
   const lines = (q.QuoteLineItems?.records || []).map(lineRow).join("");
+  // Once the deal is won, the losing option shows "Not selected" — no live Accept button.
   const cta = opt.accepted
-    ? `<div class="accepted">✓ Accepted</div>`
+    ? `<div class="accepted">✓ Accepted — Closed Won</div>`
+    : won
+    ? `<div class="declined">Not selected</div>`
     : `<a class="btn primary" href="/api/of/${offerId}?accept=${q.Id}">Accept this proposal</a>`;
-  return `<section class="card ${opt.recommended ? "rec" : ""} ${opt.accepted ? "won" : ""}">
+  return `<section class="card ${opt.recommended ? "rec" : ""} ${opt.accepted ? "won" : ""} ${won && !opt.accepted ? "faded" : ""}">
     ${opt.recommended ? `<div class="ribbon">Recommended</div>` : ""}
     <div class="opt-head"><div><div class="opt-label">${opt.label || q.Name}</div><div class="opt-status">Quote ${q.Status}${q.ExpirationDate ? ` · valid through ${q.ExpirationDate}` : ""}</div></div>
       <div class="opt-total">${money(q.TotalPrice)}<span class="per">/year</span></div></div>
@@ -80,7 +91,8 @@ function optionSection(opt: any, offerId: string) {
   </section>`;
 }
 
-function render(account: string, headline: string | undefined, options: any[], offerId: string, accepted: boolean) {
+function render(account: string, headline: string | undefined, options: any[], offerId: string, won: boolean) {
+  const wonOpt = options.find((o) => o.accepted);
   return `<!doctype html><html lang="en"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>${headline || "Proposal"} — ${account}</title><style>
   :root{--navy:#0b1f3a;--ink:#0f1729;--mut:#5b6b85;--line:#e4e9f2;--accent:#0f766e;--accent2:#10b981;--bg:#eef2f8}
@@ -113,7 +125,11 @@ function render(account: string, headline: string | undefined, options: any[], o
   .btn.primary{background:var(--accent2);color:#04241a} .btn.primary:hover{filter:brightness(1.05)}
   .btn.ghost{background:#fff;color:var(--navy);border:1px solid var(--line)}
   .accepted{display:inline-block;padding:12px 18px;border-radius:11px;background:#ecfdf5;border:1px solid #6ee7b7;color:#047857;font-weight:800}
+  .declined{display:inline-block;padding:12px 18px;border-radius:11px;background:#f3f4f6;border:1px solid #e4e9f2;color:#8a98ad;font-weight:700}
+  .card.faded{opacity:.62} .card.won{border-color:var(--accent2);box-shadow:0 0 0 2px var(--accent2),0 18px 44px -22px #0f766e88}
   .banner{margin:22px 40px 0;background:#0e2748;color:#bbf7d0;border-radius:12px;padding:14px 18px;font-weight:600}
+  .banner.win{background:linear-gradient(90deg,#065f46,#10b981);color:#ecfdf5;font-size:16px;padding:18px 22px}
+  .banner.win b{color:#fff}
   .foot{margin:30px 40px 0;color:#8a98ad;font-size:12px;border-top:1px solid var(--line);padding-top:16px}
   @media(max-width:600px){.top,.model,.card,.banner,.foot{margin-left:14px;margin-right:14px;padding-left:18px;padding-right:18px}.pdesc{max-width:none}}
 </style></head><body><div class="wrap">
@@ -121,9 +137,9 @@ function render(account: string, headline: string | undefined, options: any[], o
     <div class="eyebrow">Proposal for ${account}</div>
     <h1>${headline || (options.length > 1 ? "Your tailored options" : options[0]?.quote?.Name || "Enterprise Agreement")}</h1>
     <div class="acct">Modern AI platform — seats included, you commit to usage.</div></div>
-  ${accepted ? `<div class="banner">🎉 Accepted — your account team will follow up to finalize. Status written back to Salesforce.</div>` : ""}
+  ${won && wonOpt ? `<div class="banner win">🎉 <b>Closed Won</b> — ${account} accepted <b>${wonOpt.label || wonOpt.quote.Name}</b> at <b>${money(wonOpt.quote.TotalPrice)}/year</b>. Synced to the Opportunity in Salesforce.</div>` : ""}
   <div class="model">💡 <b>How our pricing works:</b> Platform <b>seats are free</b> (100% waived) — you commit to an annual <b>usage pool</b>, and we expand with a dedicated <b>Forward Deployed Engineer</b> and <b>Premium Support</b>. You pay for value delivered, not seats.</div>
-  ${options.map((o) => optionSection(o, offerId)).join("")}
+  ${options.map((o) => optionSection(o, offerId, won)).join("")}
   <div class="foot">Rendered live from Salesforce · ${options.map((o) => "Quote " + o.quote.Id).join(" · ")}</div>
 </div></body></html>`;
 }

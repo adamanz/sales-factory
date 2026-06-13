@@ -39,7 +39,7 @@ export async function sendUserMessage(sessionId: string, text: string) {
 
 export async function defineOutcome(sessionId: string, description: string, rubricMd: string) {
   await anthropic.beta.sessions.events.send(sessionId, {
-    events: [{ type: "user.define_outcome", description, rubric: { type: "text", content: rubricMd }, max_iterations: 5 }],
+    events: [{ type: "user.define_outcome", description, rubric: { type: "text", content: rubricMd }, max_iterations: 1 }],
   } as any);
 }
 

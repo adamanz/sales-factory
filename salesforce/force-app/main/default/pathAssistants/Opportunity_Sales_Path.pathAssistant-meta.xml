@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PathAssistant xmlns="http://soap.sforce.com/2006/04/metadata">
+    <active>true</active>
+    <entityName>Opportunity</entityName>
+    <fieldName>StageName</fieldName>
+    <masterLabel>AI Platform Sales Path</masterLabel>
+    <recordTypeName>__MASTER__</recordTypeName>
+    <pathAssistantSteps>
+        <fieldNames>NextStep</fieldNames>
+        <info>&lt;p&gt;Confirm there&apos;s a real use case and budget owner. Capture the pain in &lt;b&gt;Next Step&lt;/b&gt;.&lt;/p&gt;</info>
+        <picklistValueName>Prospecting</picklistValueName>
+    </pathAssistantSteps>
+    <pathAssistantSteps>
+        <fieldNames>NextStep</fieldNames>
+        <fieldNames>CloseDate</fieldNames>
+        <info>&lt;p&gt;Qualify the fit: team size, target workflows, and who signs. Set a realistic &lt;b&gt;Close Date&lt;/b&gt;.&lt;/p&gt;</info>
+        <picklistValueName>Qualification</picklistValueName>
+    </pathAssistantSteps>
+    <pathAssistantSteps>
+        <fieldNames>NextStep</fieldNames>
+        <info>&lt;p&gt;Map the highest-value workflows. Size the &lt;b&gt;usage pool&lt;/b&gt; to expected agent runs &amp; tool calls — seats are free.&lt;/p&gt;</info>
+        <picklistValueName>Needs Analysis</picklistValueName>
+    </pathAssistantSteps>
+    <pathAssistantSteps>
+        <fieldNames>NextStep</fieldNames>
+        <info>&lt;p&gt;Frame value, not seats: org-wide adoption at zero per-seat cost, committed usage, expand with an FDE.&lt;/p&gt;</info>
+        <picklistValueName>Value Proposition</picklistValueName>
+    </pathAssistantSteps>
+    <pathAssistantSteps>
+        <fieldNames>NextStep</fieldNames>
+        <info>&lt;p&gt;Confirm the economic buyer and any security / procurement reviewers. Add them as Contact Roles.&lt;/p&gt;</info>
+        <picklistValueName>Id. Decision Makers</picklistValueName>
+    </pathAssistantSteps>
+    <pathAssistantSteps>
+        <fieldNames>NextStep</fieldNames>
+        <info>&lt;p&gt;Address objections early. Make sure the recommended option clearly beats &quot;do nothing&quot;.&lt;/p&gt;</info>
+        <picklistValueName>Perception Analysis</picklistValueName>
+    </pathAssistantSteps>
+    <pathAssistantSteps>
+        <fieldNames>Amount</fieldNames>
+        <fieldNames>NextStep</fieldNames>
+        <info>&lt;p&gt;Send the tailored options (Lean vs. Full). Every line item must be &lt;b&gt;catalog-grounded&lt;/b&gt;; recommend one.&lt;/p&gt;</info>
+        <picklistValueName>Proposal/Price Quote</picklistValueName>
+    </pathAssistantSteps>
+    <pathAssistantSteps>
+        <fieldNames>Amount</fieldNames>
+        <fieldNames>CloseDate</fieldNames>
+        <info>&lt;p&gt;Hold on value. Trade concessions for term length or a bigger usage commitment — not free seats (already free).&lt;/p&gt;</info>
+        <picklistValueName>Negotiation/Review</picklistValueName>
+    </pathAssistantSteps>
+    <pathAssistantSteps>
+        <fieldNames>Amount</fieldNames>
+        <info>&lt;p&gt;🎉 &lt;b&gt;Won!&lt;/b&gt; The accepted Quote is synced to this Opportunity. Confirm the order form is filed and kick off onboarding with the FDE.&lt;/p&gt;</info>
+        <picklistValueName>Closed Won</picklistValueName>
+    </pathAssistantSteps>
+    <pathAssistantSteps>
+        <fieldNames>NextStep</fieldNames>
+        <info>&lt;p&gt;Log the reason for the loss so we learn. Keep the relationship warm for a future cycle.&lt;/p&gt;</info>
+        <picklistValueName>Closed Lost</picklistValueName>
+    </pathAssistantSteps>
+</PathAssistant>

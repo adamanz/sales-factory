@@ -64,10 +64,36 @@ function publishArtifact(input: any) {
   return { url: `${process.env.PUBLIC_BASE_URL || "http://localhost:3000"}/api/${kind}/${id}`, id };
 }
 
-function createOffer(input: any) {
+async function createOffer(input: any, sessionId: string) {
   const id = input.id || `of-${++artifactSeq}-${Date.now().toString(36)}`;
-  offers.put(id, { headline: input.headline, account: input.account, notes: input.notes, options: input.options || [] });
-  return { url: `${process.env.PUBLIC_BASE_URL || "http://localhost:3000"}/api/of/${id}`, id };
+  const st = store.bySession(sessionId);
+  const options = input.options || [];
+  // Stamp call context so the stateless offer page can reply in this thread + advance this Opp.
+  offers.put(id, {
+    headline: input.headline, account: input.account, notes: input.notes, options,
+    botId: st?.botId, threadTs: st?.slackThreadTs, channelId: st?.channelId, opportunityId: st?.opportunityId,
+  });
+  const url = `${process.env.PUBLIC_BASE_URL || "http://localhost:3000"}/api/of/${id}`;
+  // Post an interactive order form (one Accept button per option) into the call thread.
+  try {
+    const idsList = options.map((o: any) => `'${o.quoteId}'`).join(",");
+    const quotes = idsList ? await sf.query<any>(`SELECT Id, Name, TotalPrice, Status FROM Quote WHERE Id IN (${idsList})`) : [];
+    const byId: Record<string, any> = Object.fromEntries(quotes.map((q: any) => [q.Id, q]));
+    const blocks: any[] = [{ type: "header", text: { type: "plain_text", text: `📝 Order form${input.account ? ` — ${input.account}` : ""}` } }];
+    for (const o of options) {
+      const q = byId[o.quoteId]; if (!q) continue;
+      const total = "$" + Number(q.TotalPrice || 0).toLocaleString("en-US", { maximumFractionDigits: 0 });
+      const accepted = q.Status === "Accepted";
+      blocks.push({
+        type: "section",
+        text: { type: "mrkdwn", text: `*${o.label || q.Name}* — *${total}/yr*${o.recommended ? "  ⭐ _Recommended_" : ""}${accepted ? "  ✅ _Accepted_" : ""}` },
+        ...(accepted ? {} : { accessory: { type: "button", action_id: "confirm_order", ...(o.recommended ? { style: "primary" } : {}), text: { type: "plain_text", text: "Accept" }, value: `${o.quoteId}|${id}` } }),
+      });
+    }
+    blocks.push({ type: "actions", elements: [{ type: "button", text: { type: "plain_text", text: "Open full order form" }, url }] });
+    await postMessage({ channel: st?.channelId || process.env.SLACK_CHANNEL_ID!, thread_ts: st?.slackThreadTs, text: `Order form ready: ${url}`, blocks });
+  } catch (e) { console.error("[consumer] order form post failed:", String(e).slice(0, 160)); }
+  return { url, id };
 }
 
 export async function runConsumer(sessionId: string) {
@@ -86,7 +112,7 @@ export async function runConsumer(sessionId: string) {
           if (ev.name === "salesforce_op") result = await salesforceOp(ev.input);
           else if (ev.name === "slack_post") result = await slackPost(ev.input, sessionId);
           else if (ev.name === "publish_artifact") result = publishArtifact(ev.input);
-          else if (ev.name === "create_offer") result = createOffer(ev.input);
+          else if (ev.name === "create_offer") result = await createOffer(ev.input, sessionId);
           else result = { error: `unknown tool ${ev.name}` };
         } catch (e: any) { result = { error: String(e?.message || e) }; }
         await sendCustomToolResult(sessionId, ev.id, result, ev.session_thread_id);

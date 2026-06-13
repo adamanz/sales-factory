@@ -1,0 +1,101 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"/>
+<title>Slack — sales war room</title><style>
+  *{box-sizing:border-box}
+  body{margin:0;background:#fff;color:#1d1c1d;font-family:-apple-system,"Segoe UI",Lato,Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+  .win{width:760px;margin:0 auto;border:1px solid #e2e2e2}
+  .chan{display:flex;align-items:center;gap:8px;padding:12px 18px;border-bottom:1px solid #e8e8e8}
+  .chan .h{font-weight:900;font-size:16px} .chan .sub{color:#616061;font-size:13px;margin-left:2px}
+  .chan .members{margin-left:auto;color:#616061;font-size:13px;border:1px solid #e2e2e2;border-radius:6px;padding:3px 8px}
+  .feed{padding:8px 0 14px}
+  .msg{display:flex;gap:10px;padding:8px 18px}
+  .msg:hover{background:#f8f8f8}
+  .av{width:36px;height:36px;border-radius:8px;flex:0 0 36px;display:flex;align-items:center;justify-content:center;font-size:20px}
+  .av.bot{background:#1f1f4d;color:#fff}
+  .av.rep{background:#e8912d;color:#fff;font-weight:800;font-size:14px}
+  .body{flex:1;min-width:0}
+  .meta{display:flex;align-items:baseline;gap:7px}
+  .name{font-weight:900;font-size:15px}
+  .app{background:#e8e8e8;color:#454545;font-size:10px;font-weight:700;border-radius:3px;padding:1px 4px;text-transform:uppercase;letter-spacing:.02em}
+  .time{color:#9a9a9a;font-size:12px}
+  .txt{font-size:15px;line-height:1.46;margin-top:2px}
+  .txt code{background:#f3f0f0;color:#c0341d;font-family:ui-monospace,Menlo,monospace;font-size:12.5px;padding:1px 5px;border-radius:4px}
+  .trig{font-weight:800}
+  .pricing{color:#1264a3} .competitor{color:#b3590f} .signal{color:#157347} .objection{color:#8a1f6b}
+  .divider{display:flex;align-items:center;gap:12px;padding:6px 18px;margin:6px 0}
+  .divider .ln{height:1px;background:#e3342f33;flex:1} .divider .lbl{color:#9a3b36;font-size:12px;font-weight:700;letter-spacing:.05em}
+  .divider.post .ln{background:#157f4233} .divider.post .lbl{color:#15743f}
+  /* Block Kit order form card */
+  .bk{margin-top:8px;border:1px solid #e2e2e2;border-left:4px solid #1264a3;border-radius:8px;padding:14px 16px;max-width:560px;background:#fff}
+  .bk h3{margin:0 0 10px;font-size:17px;font-weight:900}
+  .opt{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:11px 0;border-top:1px solid #f0f0f0}
+  .opt:first-of-type{border-top:none}
+  .opt .lab{font-size:15px}
+  .opt .lab b{font-weight:800}
+  .opt .star{color:#b3590f;font-weight:700;font-size:13px;margin-left:4px}
+  .accept{border:1px solid #1264a3;color:#1264a3;background:#fff;border-radius:6px;padding:7px 16px;font-weight:800;font-size:14px;white-space:nowrap}
+  .accept.primary{background:#007a5a;border-color:#007a5a;color:#fff}
+  .openbtn{margin-top:12px;display:inline-block;border:1px solid #ddd;border-radius:6px;padding:7px 14px;font-weight:700;font-size:14px;color:#1d1c1d}
+  .qmeta{color:#616061;font-size:13.5px;margin-top:3px}
+  .links a{color:#1264a3;text-decoration:none}
+  .reactions{margin-top:8px;display:flex;gap:6px}
+  .react{border:1px solid #d6e8f5;background:#f0f8ff;border-radius:12px;padding:1px 8px;font-size:12px;color:#1264a3;font-weight:700}
+</style></head><body>
+<div class="win">
+  <div class="chan"><span class="h"># sales-war-room</span><span class="sub">&nbsp;|&nbsp; Acme Robotics — live call</span><span class="members">👥 5</span></div>
+  <div class="feed">
+
+    <div class="msg"><div class="av bot">🏭</div><div class="body">
+      <div class="meta"><span class="name">Sales Factory</span><span class="app">App</span><span class="time">2:01 PM</span></div>
+      <div class="txt">🏭 On it — joining the call. I'll coach live here and post the quotes + offer when it wraps. <span style="color:#616061">(Recall bot 9f3c…a21)</span></div>
+    </div></div>
+
+    <div class="divider"><span class="lbl">LIVE COACHING — call in progress</span><span class="ln"></span></div>
+
+    <div class="msg"><div class="av bot">🏭</div><div class="body">
+      <div class="meta"><span class="name">Sales Factory</span><span class="app">App</span><span class="time">2:04 PM</span></div>
+      <div class="txt"><span class="trig pricing">PRICING:</span> Budget objection on per-seat. Lead with <b>free seats</b> — we don't monetize per-user. Anchor the cost on the usage pool.</div>
+    </div></div>
+
+    <div class="msg"><div class="av bot">🏭</div><div class="body">
+      <div class="meta"><span class="name">Sales Factory</span><span class="app">App</span><span class="time">2:06 PM</span></div>
+      <div class="txt"><span class="trig competitor">COMPETITOR:</span> Glean is search-first. Differentiate on agents + a Forward Deployed Engineer who integrates their internal tools in one quarter.</div>
+    </div></div>
+
+    <div class="msg"><div class="av bot">🏭</div><div class="body">
+      <div class="meta"><span class="name">Sales Factory</span><span class="app">App</span><span class="time">2:08 PM</span></div>
+      <div class="txt"><span class="trig signal">BUYING SIGNAL:</span> He asked for two quotes + a deck for his VP. Lock scope now: Lean = seats + usage; Full = + FDE + Premium Support.</div>
+    </div></div>
+
+    <div class="divider post"><span class="lbl">CALL ENDED — post-call swarm: quote · deck · order · research</span><span class="ln"></span></div>
+
+    <div class="msg"><div class="av bot">🏭</div><div class="body">
+      <div class="meta"><span class="name">Sales Factory</span><span class="app">App</span><span class="time">2:31 PM</span></div>
+      <div class="txt">✅ <b>Deliverables ready for Acme Robotics.</b> Created <b>2 Salesforce Quotes</b>, a pitch deck, and an order form — and a Glean battlecard in the thread.<br>
+        &nbsp;&nbsp;• <b>Lean (Land)</b> — $100,000/yr · 40 free seats + $100k usage pool<br>
+        &nbsp;&nbsp;• <b>Full (Land + Expand)</b> ⭐ — $205,000/yr · + FDE $60k + Premium Support $25k<br>
+        <span class="links">📊 <a href="#">Pitch deck</a> &nbsp;·&nbsp; 📝 <a href="#">Order form</a></span>
+      </div>
+    </div></div>
+
+    <div class="msg"><div class="av bot">🏭</div><div class="body">
+      <div class="meta"><span class="name">Sales Factory</span><span class="app">App</span><span class="time">2:31 PM</span></div>
+      <div class="txt">
+        <div class="bk">
+          <h3>📝 Order form — Acme Robotics</h3>
+          <div class="opt">
+            <div class="lab"><b>Lean (Land)</b> — <b>$100,000/yr</b><div class="qmeta">40 free seats + $100k usage pool</div></div>
+            <div class="accept">Accept</div>
+          </div>
+          <div class="opt">
+            <div class="lab"><b>Full (Land + Expand)</b> — <b>$205,000/yr</b><span class="star">⭐ Recommended</span><div class="qmeta">+ Forward Deployed Engineer + Premium Support</div></div>
+            <div class="accept primary">Accept</div>
+          </div>
+          <div class="openbtn">Open full order form ↗</div>
+        </div>
+        <div class="reactions"><span class="react">✅ 2</span><span class="react">🔥 1</span></div>
+      </div>
+    </div></div>
+
+  </div>
+</div>
+</body></html>

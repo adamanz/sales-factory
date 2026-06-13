@@ -30,6 +30,9 @@ export async function create(sobject: string, fields: Record<string, any>): Prom
 export async function update(sobject: string, id: string, fields: Record<string, any>): Promise<void> {
   await sf(`/sobjects/${sobject}/${id}`, { method: "PATCH", body: JSON.stringify(fields) });
 }
+export async function del(sobject: string, id: string): Promise<void> {
+  await sf(`/sobjects/${sobject}/${id}`, { method: "DELETE" });
+}
 export function recordUrl(id: string): string {
   return `${base().url}/lightning/r/${id}/view`;
 }
@@ -45,15 +48,24 @@ export async function getCatalog() {
 }
 
 // --- Quote + line items ---
-export type QuoteLine = { pricebookEntryId: string; quantity: number; unitPrice: number; discount?: number };
-export async function createQuote(opts: { opportunityId: string; pricebookId: string; name: string; lines: QuoteLine[]; status?: string }) {
+export type QuoteLine = { pricebookEntryId: string; quantity: number; unitPrice: number; discount?: number; description?: string };
+export async function createQuote(opts: {
+  opportunityId: string; pricebookId: string; name: string; lines: QuoteLine[];
+  status?: string; description?: string; expirationDate?: string; contactId?: string; email?: string; phone?: string;
+}) {
   const quoteId = await create("Quote", {
     Name: opts.name, OpportunityId: opts.opportunityId, Pricebook2Id: opts.pricebookId, Status: opts.status ?? "Draft",
+    ...(opts.description ? { Description: opts.description } : {}),
+    ...(opts.expirationDate ? { ExpirationDate: opts.expirationDate } : {}),
+    ...(opts.contactId ? { ContactId: opts.contactId } : {}),
+    ...(opts.email ? { Email: opts.email } : {}),
+    ...(opts.phone ? { Phone: opts.phone } : {}),
   });
   for (const l of opts.lines) {
     await create("QuoteLineItem", {
       QuoteId: quoteId, PricebookEntryId: l.pricebookEntryId, Quantity: l.quantity, UnitPrice: l.unitPrice,
       ...(l.discount != null ? { Discount: l.discount } : {}),
+      ...(l.description ? { Description: l.description } : {}),
     });
   }
   const [q] = await query(`SELECT Id, Name, TotalPrice FROM Quote WHERE Id = '${quoteId}'`);

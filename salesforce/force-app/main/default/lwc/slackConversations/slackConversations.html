@@ -1,0 +1,38 @@
+<template>
+    <lightning-card title="Slack Conversations" icon-name="utility:chat">
+        <div class="slds-p-horizontal_medium slds-p-bottom_medium">
+            <template lwc:if={hasChannels}>
+                <ul class="slds-has-dividers_bottom-space">
+                    <template for:each={channels} for:item="c">
+                        <li key={c.id} class="slds-item slds-p-vertical_x-small">
+                            <div class="slds-grid slds-grid_align-spread slds-grid_vertical-align-center">
+                                <div class="slds-truncate">
+                                    <lightning-icon icon-name="utility:socialshare" size="x-small" class="slds-m-right_x-small"></lightning-icon>
+                                    <strong>{c.name}</strong>
+                                </div>
+                                <template lwc:if={c.href}>
+                                    <a href={c.href} target="_blank" rel="noopener">Open in Slack</a>
+                                </template>
+                            </div>
+                        </li>
+                    </template>
+                </ul>
+            </template>
+            <template lwc:elseif={error}>
+                <div class="slds-text-color_error slds-p-vertical_small">{error}</div>
+            </template>
+            <template lwc:else>
+                <div class="slds-align_absolute-center slds-text-align_center slds-p-vertical_large">
+                    <div>
+                        <lightning-icon icon-name="utility:chat" size="large" class="slds-m-bottom_small"></lightning-icon>
+                        <p class="slds-text-heading_small">No Slack conversation linked yet</p>
+                        <p class="slds-text-body_small slds-text-color_weak slds-p-top_xx-small">
+                            Live call coaching is posted to the team Slack channel during the call.
+                            When a channel is linked to this record it will appear here.
+                        </p>
+                    </div>
+                </div>
+            </template>
+        </div>
+    </lightning-card>
+</template>
