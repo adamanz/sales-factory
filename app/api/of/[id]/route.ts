@@ -18,7 +18,8 @@ async function demoConfig(): Promise<OfferConfig | undefined> {
   return { account: "Acme Robotics", headline: "Your tailored options", options: rows.map((q) => ({ quoteId: q.Id, label: q.Name, recommended: q.Id === recId })) };
 }
 function configFromIds(sp: URLSearchParams): OfferConfig {
-  const ids = (sp.get("ids") || "").split(",").map((s) => s.trim()).filter(Boolean);
+  // Only accept well-formed Quote ids — these get interpolated into SOQL downstream.
+  const ids = (sp.get("ids") || "").split(",").map((s) => s.trim()).filter(isQuoteId);
   const rec = sp.get("rec");
   return { account: sp.get("account") || undefined, headline: sp.get("headline") || undefined, notes: sp.get("notes") || undefined, options: ids.map((quoteId) => ({ quoteId, recommended: quoteId === rec })) };
 }
@@ -36,10 +37,10 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 
   const accept = sp.get("accept");
   let acceptedId: string | null = null;
-  // Full loop: mark Accepted + deny the other options + sync Opp + advance stage to Closed Won
-  // + file the agreed OF in SF + reply in the Slack thread. denyQuoteIds is passed explicitly so
-  // the demo path (where the offer config isn't stored in `offers`) still denies the loser.
-  if (accept) {
+  // Full loop: mark Accepted + deny the other options + advance the Opp to Closed Won + file the
+  // agreed OF in SF + reply in Slack. Only honor an accept that is a well-formed Quote id AND one
+  // of THIS offer's options — never let a query param close an arbitrary (foreign) quote/Opp.
+  if (accept && isQuoteId(accept) && cfg.options.some((o) => o.quoteId === accept)) {
     const denyQuoteIds = cfg.options.map((o) => o.quoteId).filter((qid) => qid !== accept);
     try { const r = await acceptOffer(accept, { offerId: id, source: "of_page", denyQuoteIds }); if (r.ok) acceptedId = accept; } catch {}
   }

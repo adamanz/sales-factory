@@ -54,6 +54,16 @@ async function main() {
   const files = await sf.query<any>(`SELECT Id, Title FROM ContentVersion WHERE FirstPublishLocationId = '${FULL}' AND Title LIKE 'Order Form%'`);
   check("Agreed order form filed on the Quote", files.length >= 1, files[0]?.Title || "none");
 
+  // Re-click idempotency (the CRITICAL bug): a second Accept must be a safe no-op — already-won,
+  // no error, no duplicate Slack win, Opp still closed, and exactly one order form on file.
+  const r2: any = await acceptOffer(FULL, { offerId: "verify-offer", source: "of_page" });
+  check("re-click: alreadyWon = true", r2.alreadyWon === true);
+  check("re-click: did NOT re-post to Slack", r2.posted === false);
+  const [opp2] = await sf.query<any>(`SELECT StageName FROM Opportunity WHERE Id = '${OPP}'`);
+  check("re-click: Opportunity still Closed Won", opp2?.StageName === "Closed Won", opp2?.StageName);
+  const files2 = await sf.query<any>(`SELECT Id FROM ContentVersion WHERE FirstPublishLocationId = '${FULL}' AND Title LIKE 'Order Form%'`);
+  check("re-click: order form NOT duplicated", files2.length === files.length, `${files2.length} file(s)`);
+
   console.log(`\n${fail === 0 ? "🎉 ALL PASS" : "⚠️  FAILURES"} — ${pass} passed, ${fail} failed.`);
   if (fail === 0) console.log("Run `npm run demo:reset` to re-prime for the next run.");
   process.exit(fail === 0 ? 0 : 1);

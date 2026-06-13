@@ -23,37 +23,41 @@ export type AcceptOpts = {
 
 export async function acceptOffer(quoteId: string, opts: AcceptOpts = {}) {
   const rows = await query<any>(
-    `SELECT Id, Name, Status, TotalPrice, OpportunityId, Opportunity.Name, Opportunity.Account.Name,
+    `SELECT Id, Name, Status, TotalPrice, OpportunityId, Opportunity.Name, Opportunity.StageName, Opportunity.Account.Name,
             (SELECT Product2.ProductCode, Product2.Name, Quantity, UnitPrice, Discount, TotalPrice
              FROM QuoteLineItems ORDER BY TotalPrice DESC)
      FROM Quote WHERE Id = '${quoteId}'`
   );
   const q = rows[0];
-  if (!q) return { ok: false as const, alreadyAccepted: false };
+  if (!q) return { ok: false as const, alreadyWon: false };
   const oppId: string = q.OpportunityId;
   const account: string = q.Opportunity?.Account?.Name || opts.account || "The customer";
-  const alreadyAccepted = q.Status === "Accepted";
+  // Idempotency is keyed on the Opportunity's TERMINAL state, not Quote.Status — so a partial
+  // failure (or a re-click) re-runs the close instead of being skipped as "already done".
+  const alreadyWon = q.Opportunity?.StageName === WON_STAGE;
 
-  if (!alreadyAccepted) {
+  if (!alreadyWon) {
+    // 1. Close the Opportunity FIRST — the authoritative outcome. Quote→Opp sync is unreliable
+    //    here (SF breaks the sync the moment the Opp closes), so we null any sync to make Amount
+    //    writeable and set the won-figures directly. This is NOT swallowed: if it throws we bail
+    //    before touching the Quote, so the page never shows a false "won" and a re-click retries.
+    const today = new Date().toISOString().slice(0, 10);
+    try { await update("Opportunity", oppId, { SyncedQuoteId: null }); } catch { /* no active sync */ }
+    await update("Opportunity", oppId, { StageName: WON_STAGE, CloseDate: today, Amount: q.TotalPrice });
+    // 2. Mark the accepted Quote + deny the losing options (idempotent — no-ops if already set).
     await update("Quote", quoteId, { Status: "Accepted" });
-    // Deny the losing options so the picture is unambiguous: one Accepted, the rest Denied.
-    const denyIds = opts.denyQuoteIds
-      || (opts.offerId ? (offers.get(opts.offerId)?.options || []).map((o) => o.quoteId) : []);
+    const denyIds = (opts.denyQuoteIds && opts.denyQuoteIds.length)
+      ? opts.denyQuoteIds
+      : (opts.offerId ? (offers.get(opts.offerId)?.options || []).map((o) => o.quoteId) : []);
     for (const id of denyIds) {
       if (id && id !== quoteId) { try { await update("Quote", id, { Status: "Denied" }); } catch { /* one bad id shouldn't abort the close */ } }
     }
-    // Close the Opportunity and set Amount to the accepted quote's total DIRECTLY. Quote→Opp
-    // sync is unreliable here: Salesforce breaks the sync the moment the Opp closes (in testing
-    // it cleared SyncedQuoteId and left a stale Amount). So we null any existing sync to make
-    // Amount writeable, then write the authoritative won-figures ourselves — works on every re-run.
-    const today = new Date().toISOString().slice(0, 10);
-    try { await update("Opportunity", oppId, { SyncedQuoteId: null }); } catch { /* no active sync */ }
-    try { await update("Opportunity", oppId, { StageName: WON_STAGE, CloseDate: today, Amount: q.TotalPrice }); }
-    catch (e) { console.error("[accept] close-won failed:", String(e).slice(0, 160)); }
+    // 3. File the agreed order form (internally deduped, so re-runs don't double-attach).
     await fileAgreedOrderForm(quoteId, oppId, q, account);
   }
 
-  // Resolve the Slack thread to reply into.
+  // Resolve the Slack thread to reply into (explicit opts win; else the stored offer; else the
+  // configured channel root so even the env-pinned /api/of/demo path still posts the win).
   let channel = opts.channel;
   let threadTs = opts.threadTs;
   if ((!channel || !threadTs) && opts.offerId) {
@@ -61,9 +65,10 @@ export async function acceptOffer(quoteId: string, opts: AcceptOpts = {}) {
     channel = channel || off?.channelId;
     threadTs = threadTs || off?.threadTs;
   }
+  channel = channel || process.env.SLACK_CHANNEL_ID;
 
   let posted = false;
-  if (channel && threadTs && !alreadyAccepted) {
+  if (channel && !alreadyWon) {
     const r = await postMessage({
       channel,
       thread_ts: threadTs,
@@ -81,7 +86,7 @@ export async function acceptOffer(quoteId: string, opts: AcceptOpts = {}) {
 
   return {
     ok: true as const,
-    alreadyAccepted,
+    alreadyWon,
     quoteId,
     opportunityId: oppId,
     total: q.TotalPrice,

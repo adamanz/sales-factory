@@ -7,6 +7,13 @@ A sales rep's actual job is the *conversation*. Everything wrapped around it —
 <sub>Built for **Claude Build Day** on **Anthropic Managed Agents** · model `claude-opus-4-8` · status: **✅ end-to-end verified, no human in the loop**</sub>
 
 <p align="center">
+  <a href="https://recall.simple-salesforce.com/pitch.html"><b>▶&nbsp; Open the pitch deck</b></a>
+  &nbsp;·&nbsp;
+  <a href="https://htmlpreview.github.io/?https://github.com/adamanz/sales-factory/blob/master/public/pitch.html">view the slides on GitHub</a>
+  &nbsp;—&nbsp; <sub>problem → how Sales Factory solves it → system architecture</sub>
+</p>
+
+<p align="center">
   <img src="docs/img/order-form.png" alt="The live-from-Salesforce order form — two options, recommended ribbon, free seats, Accept button" width="560">
 </p>
 <p align="center"><sub>↑ A <b>real</b> render of the generated order form — two Salesforce Quotes, the recommended option ringed, seats shown as <b>$0 (100% waived)</b>, and an <b>Accept</b> button that writes back to Salesforce.</sub></p>

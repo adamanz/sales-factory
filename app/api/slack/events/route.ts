@@ -1,10 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import crypto from "crypto";
 import { store } from "@/lib/store";
 import { createCallSession, sendUserMessage, defineOutcome } from "@/lib/anthropic";
 import { runConsumer } from "@/lib/consumer";
 import { getBot, botStatus } from "@/lib/recall";
-import { postMessage } from "@/lib/slack";
+import { postMessage, verifySlackSignature } from "@/lib/slack";
 import fs from "fs";
 import path from "path";
 
@@ -12,19 +11,10 @@ import path from "path";
 // live in that thread, and posts the quotes + offer when the call ends.
 // Slack setup: Event Subscriptions → Request URL https://<PUBLIC_BASE_URL>/api/slack/events,
 // subscribe the bot to `message.channels` (and `message.groups` for private), then /invite the bot.
-const SIGNING = process.env.SLACK_SIGNING_SECRET;
 const RECALL_KEY = process.env.RECALL_API_KEY;
 const RECALL_REGION = process.env.RECALL_REGION || "us-east-1";
 const MEET_RE = /https?:\/\/(?:meet\.google\.com\/[a-z-]+|[a-z0-9.]*zoom\.us\/j\/\S+|teams\.microsoft\.com\/\S+)/i;
 const seen = new Set<string>(); // dedupe Slack event_ids
-
-function verifySlack(raw: string, ts: string | null, sig: string | null): boolean {
-  if (!SIGNING) return true; // dev: allow when no signing secret is configured
-  if (!ts || !sig) return false;
-  if (Math.abs(Date.now() / 1000 - Number(ts)) > 300) return false;
-  const mac = "v0=" + crypto.createHmac("sha256", SIGNING).update(`v0:${ts}:${raw}`).digest("hex");
-  try { return crypto.timingSafeEqual(Buffer.from(mac), Buffer.from(sig)); } catch { return false; }
-}
 
 async function createBot(meetingUrl: string): Promise<string | undefined> {
   const res = await fetch(`https://${RECALL_REGION}.recall.ai/api/v1/bot/`, {
@@ -72,7 +62,7 @@ export async function POST(req: NextRequest) {
   const raw = await req.text();
   const body = JSON.parse(raw || "{}");
   if (body.type === "url_verification") return NextResponse.json({ challenge: body.challenge }); // Slack setup handshake
-  if (!verifySlack(raw, req.headers.get("x-slack-request-timestamp"), req.headers.get("x-slack-signature"))) {
+  if (!verifySlackSignature(raw, req.headers.get("x-slack-request-timestamp"), req.headers.get("x-slack-signature"))) {
     return new NextResponse("bad signature", { status: 401 });
   }
   if (req.headers.get("x-slack-retry-num")) return NextResponse.json({ ok: true }); // ignore Slack retries

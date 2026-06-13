@@ -1,0 +1,372 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Sales Factory — the pitch</title>
+<meta name="description" content="Sales Factory: turn a live sales call into real Salesforce quotes, a deck, and an order form — a swarm of Claude agents that coach live and self-verify. Claude Build Day." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Hanken+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --ink:#070b14; --ink2:#0b1120; --panel:#0e1626; --panel2:#121d31;
+    --line:rgba(140,170,210,.10); --line2:rgba(140,170,210,.18);
+    --green:#34d399; --green-dim:#10b981; --teal:#2dd4bf;
+    --amber:#f6b667; --coral:#fb7185;
+    --text:#eaf1fb; --muted:#8da2c0; --faint:#5b6c88;
+    --radius:16px;
+    --shadow:0 30px 80px -30px rgba(0,0,0,.8);
+    --serif:"Fraunces",Georgia,serif;
+    --sans:"Hanken Grotesk",-apple-system,sans-serif;
+    --mono:"IBM Plex Mono",ui-monospace,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    font-family:var(--sans); background:var(--ink); color:var(--text);
+    overflow:hidden; -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+  }
+  /* blueprint atmosphere */
+  .bg{position:fixed; inset:0; z-index:0; pointer-events:none}
+  .bg::before{ /* grid */
+    content:""; position:absolute; inset:0;
+    background-image:
+      linear-gradient(var(--line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--line) 1px, transparent 1px);
+    background-size:46px 46px; mask-image:radial-gradient(120% 120% at 70% 10%, #000 35%, transparent 80%);
+    opacity:.55;
+  }
+  .bg::after{ /* glow */
+    content:""; position:absolute; inset:0;
+    background:
+      radial-gradient(70% 90% at 82% 8%, rgba(52,211,153,.16), transparent 55%),
+      radial-gradient(60% 80% at 10% 95%, rgba(45,212,191,.10), transparent 55%),
+      radial-gradient(120% 120% at 50% 50%, transparent 40%, rgba(2,5,12,.8) 100%);
+  }
+  .grain{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.04;mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");}
+
+  /* deck shell */
+  .deck{position:relative;z-index:2;height:100dvh;width:100vw}
+  .slide{
+    position:absolute; inset:0; display:grid; align-content:center;
+    padding:clamp(28px,6vw,110px); padding-bottom:120px;
+    opacity:0; transform:translateX(48px) scale(.99); pointer-events:none;
+    transition:opacity .5s ease, transform .55s cubic-bezier(.22,.61,.36,1);
+  }
+  .slide.active{opacity:1; transform:none; pointer-events:auto}
+  .slide.prev{transform:translateX(-48px) scale(.99)}
+  .wrap{width:min(1100px,100%); margin:0 auto}
+
+  .kicker{font-family:var(--mono); font-size:13px; letter-spacing:.28em; text-transform:uppercase;
+    color:var(--green); display:flex; align-items:center; gap:14px; margin-bottom:26px}
+  .kicker .bar{height:1px; width:54px; background:linear-gradient(90deg,var(--green),transparent)}
+  .kicker.warn{color:var(--coral)} .kicker.warn .bar{background:linear-gradient(90deg,var(--coral),transparent)}
+
+  h1{font-family:var(--serif); font-weight:600; line-height:.98; letter-spacing:-.02em;
+    font-size:clamp(46px,9.5vw,140px); font-optical-sizing:auto}
+  h2{font-family:var(--serif); font-weight:600; line-height:1.02; letter-spacing:-.015em;
+    font-size:clamp(34px,6vw,80px)}
+  .lead{font-size:clamp(17px,2vw,23px); color:var(--muted); line-height:1.55; max-width:60ch; margin-top:26px}
+  .lead strong{color:var(--text); font-weight:600}
+  em{font-style:italic}
+  .accent{color:var(--green)} .accent-t{color:var(--teal)} .accent-a{color:var(--amber)}
+
+  /* title slide */
+  .title-tag{font-family:var(--mono); font-size:12.5px; letter-spacing:.34em; color:var(--faint);
+    text-transform:uppercase; margin-top:34px}
+  .title-tag b{color:var(--green-dim)}
+  .pulse{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--green);
+    box-shadow:0 0 0 0 rgba(52,211,153,.6); animation:pulse 2.4s infinite; margin-right:10px;vertical-align:middle}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(52,211,153,.55)}70%{box-shadow:0 0 0 16px rgba(52,211,153,0)}100%{box-shadow:0 0 0 0 rgba(52,211,153,0)}}
+
+  /* generic grids/cards */
+  .grid{display:grid;gap:16px;margin-top:40px}
+  .g2{grid-template-columns:repeat(2,1fr)} .g3{grid-template-columns:repeat(3,1fr)} .g4{grid-template-columns:repeat(4,1fr)}
+  .card{background:linear-gradient(180deg,var(--panel),var(--panel2)); border:1px solid var(--line2);
+    border-radius:var(--radius); padding:22px 22px 24px; position:relative; overflow:hidden}
+  .card .n{font-family:var(--mono); font-size:13px; color:var(--green); letter-spacing:.1em}
+  .card h3{font-size:18px; font-weight:600; margin:10px 0 6px; letter-spacing:-.01em}
+  .card p{color:var(--muted); font-size:14.5px; line-height:1.5}
+  .card::after{content:"";position:absolute;left:0;top:0;height:100%;width:3px;background:linear-gradient(var(--green),transparent)}
+
+  /* chips */
+  .chips{display:flex; flex-wrap:wrap; gap:10px; margin-top:18px}
+  .chip{font-family:var(--mono); font-size:13px; padding:9px 14px; border-radius:999px;
+    border:1px solid var(--line2); background:rgba(255,255,255,.02); color:var(--text)}
+  .chip b{color:var(--green)}
+  .chip.t b{color:var(--teal)}
+  .col-h{font-family:var(--mono); font-size:12px; letter-spacing:.24em; text-transform:uppercase; color:var(--faint); margin-bottom:4px}
+
+  .busy{display:flex;flex-wrap:wrap;gap:10px;margin-top:34px}
+  .busy span{font-family:var(--mono);font-size:14px;color:var(--muted);padding:8px 13px;border:1px dashed var(--line2);border-radius:10px}
+  .busy span s{color:var(--faint)}
+  .stat{margin-top:40px;display:flex;align-items:baseline;gap:18px;flex-wrap:wrap}
+  .stat .big{font-family:var(--serif);font-weight:700;font-size:clamp(40px,7vw,86px);color:var(--coral);line-height:1}
+  .stat .lbl{font-size:16px;color:var(--muted);max-width:30ch}
+
+  .quote-pull{font-family:var(--serif);font-weight:500;font-style:italic;font-size:clamp(24px,4vw,46px);
+    line-height:1.2;margin-top:40px;color:var(--text);max-width:22ch}
+  .quote-pull .accent{font-style:normal}
+
+  /* architecture diagram */
+  .arch{margin-top:42px;display:flex;flex-direction:column;gap:14px}
+  .arch-row{display:flex;align-items:stretch;gap:14px;flex-wrap:wrap}
+  .box{flex:1;min-width:150px;border:1px solid var(--line2);border-radius:14px;padding:16px 18px;
+    background:linear-gradient(180deg,var(--panel),var(--panel2))}
+  .box .t{font-family:var(--mono);font-size:11.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--faint)}
+  .box .b{font-weight:600;font-size:16px;margin-top:5px}
+  .box small{color:var(--muted);font-size:13px;display:block;margin-top:5px;line-height:1.4}
+  .box.relay{border-color:rgba(52,211,153,.45);box-shadow:inset 0 0 0 1px rgba(52,211,153,.12)}
+  .box.relay .t{color:var(--green)}
+  .box.brain{border-color:rgba(45,212,191,.4)} .box.brain .t{color:var(--teal)}
+  .flowdown{display:flex;justify-content:center;color:var(--green);font-family:var(--mono);font-size:13px;gap:8px;align-items:center}
+  .toolbar{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+  .tool{font-family:var(--mono);font-size:13px;padding:7px 12px;border-radius:8px;background:rgba(52,211,153,.08);
+    border:1px solid rgba(52,211,153,.28);color:var(--green)}
+  .arch-cap{font-family:var(--mono);font-size:13px;color:var(--faint);margin-top:14px}
+
+  /* receipts */
+  .quotes{display:grid;grid-template-columns:repeat(2,1fr);gap:18px;margin-top:38px}
+  .qc{border:1px solid var(--line2);border-radius:18px;padding:26px;background:linear-gradient(180deg,var(--panel),var(--panel2));position:relative}
+  .qc.rec{border-color:rgba(52,211,153,.5);box-shadow:var(--shadow),0 0 0 1px rgba(52,211,153,.18)}
+  .qc .tag{font-family:var(--mono);font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted)}
+  .qc .ribbon{position:absolute;top:18px;right:-1px;font-family:var(--mono);font-size:11px;letter-spacing:.16em;
+    background:var(--green);color:#062012;padding:5px 12px;border-radius:8px 0 0 8px;font-weight:600}
+  .qc .amt{font-family:var(--serif);font-weight:700;font-size:clamp(38px,5.5vw,62px);margin:12px 0 4px;letter-spacing:-.02em}
+  .qc.rec .amt{color:var(--green)}
+  .qc .desc{color:var(--muted);font-size:15px;line-height:1.5}
+  .qc .id{font-family:var(--mono);font-size:11.5px;color:var(--faint);margin-top:16px;word-break:break-all}
+  .receipt-cap{color:var(--muted);font-size:15px;margin-top:24px;max-width:70ch;line-height:1.55}
+  .receipt-cap b{color:var(--text)}
+
+  /* close */
+  .arrow-big{font-family:var(--serif);font-weight:700;font-size:clamp(54px,12vw,170px);line-height:.9;letter-spacing:-.03em}
+  .arrow-big .from{color:var(--faint)} .arrow-big .to{color:var(--green)}
+  .close-line{font-family:var(--serif);font-style:italic;font-weight:500;font-size:clamp(22px,3.4vw,40px);margin-top:34px;color:var(--text)}
+  .demo-cmd{font-family:var(--mono);font-size:14px;margin-top:30px;color:var(--muted)}
+  .demo-cmd b{color:var(--green)}
+
+  /* reveal animation */
+  .slide.active .r{animation:rise .65s cubic-bezier(.2,.7,.3,1) both; animation-delay:calc(var(--d,0)*1ms)}
+  @keyframes rise{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
+
+  /* chrome */
+  .progress{position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,var(--teal),var(--green));z-index:20;
+    width:0;transition:width .5s cubic-bezier(.22,.61,.36,1);box-shadow:0 0 14px rgba(52,211,153,.6)}
+  .brand{position:fixed;top:26px;left:clamp(20px,5vw,56px);z-index:15;font-family:var(--mono);font-size:12px;
+    letter-spacing:.22em;text-transform:uppercase;color:var(--faint)}
+  .brand b{color:var(--text)}
+  .counter{position:fixed;bottom:26px;left:clamp(20px,5vw,56px);z-index:15;font-family:var(--mono);font-size:13px;color:var(--muted)}
+  .counter b{color:var(--green);font-size:20px}
+  .dots{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:15;display:flex;gap:11px}
+  .dot{width:9px;height:9px;border-radius:50%;border:1px solid var(--line2);background:transparent;cursor:pointer;padding:0;transition:.25s}
+  .dot.on{background:var(--green);border-color:var(--green);box-shadow:0 0 10px rgba(52,211,153,.6)}
+  .nav{position:fixed;bottom:22px;right:clamp(20px,5vw,56px);z-index:15;display:flex;gap:10px;align-items:center}
+  .nav button{font-family:var(--mono);font-size:13px;width:40px;height:40px;border-radius:11px;border:1px solid var(--line2);
+    background:rgba(255,255,255,.02);color:var(--text);cursor:pointer;transition:.2s}
+  .nav button:hover{border-color:var(--green);color:var(--green)}
+  .hint{position:fixed;bottom:30px;right:calc(clamp(20px,5vw,56px) + 104px);z-index:15;font-family:var(--mono);font-size:11.5px;color:var(--faint);letter-spacing:.1em}
+  @media (max-width:760px){
+    .g2,.g3,.g4,.quotes{grid-template-columns:1fr}
+    .hint{display:none} .slide{padding-bottom:128px}
+  }
+</style>
+</head>
+<body>
+<div class="bg"></div>
+<div class="grain"></div>
+<div class="progress" id="prog"></div>
+<div class="brand"><b>Sales Factory</b> &nbsp;·&nbsp; the pitch</div>
+
+<main class="deck" id="deck">
+
+  <!-- 0 — TITLE -->
+  <section class="slide">
+    <div class="wrap">
+      <div class="kicker r"><span class="bar"></span>Claude Build Day · Anthropic Managed Agents</div>
+      <h1 class="r" style="--d:80"><span class="pulse"></span>Sales<br>Factory</h1>
+      <p class="lead r" style="--d:200">Turn a live sales call into <strong>real Salesforce quotes, a clickable deck, and an order form</strong> — built by a swarm of Claude agents that coach the rep live, then <strong>self-verify</strong> their own work against a rubric.</p>
+      <div class="title-tag r" style="--d:340">Powered by <b>claude-opus-4-8</b> &nbsp;·&nbsp; Recall.ai &nbsp;·&nbsp; Salesforce &nbsp;·&nbsp; Slack</div>
+    </div>
+  </section>
+
+  <!-- 1 — PROBLEM -->
+  <section class="slide">
+    <div class="wrap">
+      <div class="kicker warn r"><span class="bar"></span>01 / The Problem</div>
+      <h2 class="r" style="--d:80">The selling is minutes.<br>The <em>paperwork</em> is hours.</h2>
+      <p class="lead r" style="--d:200">A rep's actual job is the conversation. Everything wrapped around it is admin — and it's where the deal stalls.</p>
+      <div class="busy r" style="--d:300">
+        <span>CRM data entry</span><span>two quote options</span><span>pitch deck</span>
+        <span>order form</span><span>competitor battlecard</span><span>follow-up email</span>
+      </div>
+      <div class="stat r" style="--d:420">
+        <div class="big">3–4 hrs</div>
+        <div class="lbl">of post-call admin per deal — none of it spent actually selling.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2 — INSIGHT -->
+  <section class="slide">
+    <div class="wrap">
+      <div class="kicker r"><span class="bar"></span>02 / The Insight</div>
+      <h2 class="r" style="--d:80">If we can factory-build software,<br>we can factory-build the <span class="accent">sale</span>.</h2>
+      <p class="lead r" style="--d:200">The <strong>“SDLC factory”</strong> automates the grunt work of <em>producing software</em> so engineers stay on the design. <strong>Sales Factory</strong> does the same for sales ops.</p>
+      <div class="quote-pull r" style="--d:340">The rep stays human on the call. <span class="accent">The factory does the rest.</span></div>
+    </div>
+  </section>
+
+  <!-- 3 — HOW IT SOLVES IT -->
+  <section class="slide">
+    <div class="wrap">
+      <div class="kicker r"><span class="bar"></span>03 / How Sales Factory Solves It</div>
+      <h2 class="r" style="--d:60">One call in. Every deliverable out.</h2>
+      <div class="grid g4 r" style="--d:200">
+        <div class="card"><div class="n">JOIN</div><h3>Recall.ai bot</h3><p>Auto-joins the call and streams the live transcript to the relay.</p></div>
+        <div class="card"><div class="n">COACH</div><h3>Live nudges</h3><p>The coordinator agent posts coaching to Slack on objections, pricing, competitors &amp; buying signals.</p></div>
+        <div class="card"><div class="n">BUILD</div><h3>The swarm</h3><p>quote · deck · order · research build real Salesforce Quotes, a clickable deck &amp; an order form.</p></div>
+        <div class="card"><div class="n">VERIFY</div><h3>Self-grade</h3><p>It grades its own work against a rubric until satisfied — rerunnable on <em>any</em> transcript.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4 — ARCHITECTURE -->
+  <section class="slide">
+    <div class="wrap">
+      <div class="kicker r"><span class="bar"></span>04 / System Architecture</div>
+      <h2 class="r" style="--d:60">Thin relay. Hosted brains. Real systems.</h2>
+      <div class="arch r" style="--d:180">
+        <div class="arch-row">
+          <div class="box"><div class="t">Recall.ai</div><div class="b">Meeting bot</div><small>joins the call → transcript + status via webhooks</small></div>
+          <div class="box relay"><div class="t">Relay · Next.js — only self-hosted</div><div class="b">lib/consumer.ts</div><small>reads the SSE stream, runs the agent's custom tools host-side, hosts artifact URLs</small></div>
+          <div class="box brain"><div class="t">Anthropic Managed Agents</div><div class="b">coordinator + swarm</div><small>quote · deck · order · research (claude-opus-4-8)</small></div>
+        </div>
+        <div class="flowdown">▼ &nbsp; custom tools executed host-side by the relay &nbsp; ▼</div>
+        <div class="toolbar">
+          <span class="tool">salesforce_op</span><span class="tool">slack_post</span>
+          <span class="tool">publish_artifact</span><span class="tool">create_offer</span>
+        </div>
+        <div class="arch-row">
+          <div class="box"><div class="t">Salesforce REST</div><div class="b">Quotes + line items</div><small>get_catalog · create_quote · status writeback</small></div>
+          <div class="box"><div class="t">Slack</div><div class="b">Coaching + order form</div><small>bot-token; pinned to one call thread; Accept → SF</small></div>
+          <div class="box"><div class="t">Artifacts</div><div class="b">Live HTML URLs</div><small>/api/deck · /api/quote · /api/of</small></div>
+        </div>
+      </div>
+      <div class="arch-cap r" style="--d:320">Credentials stay host-side in <code>.env.local</code> — the container never sees Salesforce.</div>
+    </div>
+  </section>
+
+  <!-- 5 — BUILT WITH CLAUDE -->
+  <section class="slide">
+    <div class="wrap">
+      <div class="kicker r"><span class="bar"></span>05 / Built with Claude</div>
+      <h2 class="r" style="--d:60">The Anthropic platform, end to end.</h2>
+      <div class="grid g2 r" style="--d:180;margin-top:36px">
+        <div>
+          <div class="col-h">Claude / Anthropic</div>
+          <div class="chips">
+            <span class="chip"><b>Managed Agents</b> claude-opus-4-8</span>
+            <span class="chip"><b>@anthropic-ai/sdk</b></span>
+            <span class="chip"><b>multiagent</b> coordinator swarm</span>
+            <span class="chip"><b>custom tools</b> host-side</span>
+            <span class="chip"><b>Artifacts</b> publish_artifact</span>
+            <span class="chip"><b>web_search</b> toolset</span>
+            <span class="chip"><b>self-grading</b> outcome eval</span>
+            <span class="chip"><b>SSE</b> event streaming</span>
+          </div>
+        </div>
+        <div>
+          <div class="col-h">Integrations</div>
+          <div class="chips">
+            <span class="chip t"><b>Recall.ai</b> transcript webhooks</span>
+            <span class="chip t"><b>Salesforce</b> Quotes · QLI · Opportunity</span>
+            <span class="chip t"><b>Salesforce</b> catalog + status writeback</span>
+            <span class="chip t"><b>Slack</b> live coaching</span>
+            <span class="chip t"><b>Slack</b> interactive order form + Accept</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6 — RECEIPTS -->
+  <section class="slide">
+    <div class="wrap">
+      <div class="kicker r"><span class="bar"></span>06 / What It Produces</div>
+      <h2 class="r" style="--d:60">Two real quotes. From one conversation.</h2>
+      <div class="quotes r" style="--d:180">
+        <div class="qc">
+          <div class="tag">Lean · Land</div>
+          <div class="amt">$100,000</div>
+          <div class="desc">40 seats at a <b style="color:var(--green)">100% discount → $0</b>, with a $100k usage pool as the revenue driver.</div>
+          <div class="id">Quote 0Q0am000002i1k1CAA</div>
+        </div>
+        <div class="qc rec">
+          <div class="ribbon">RECOMMENDED</div>
+          <div class="tag">Full · Land + Expand</div>
+          <div class="amt">$185,000</div>
+          <div class="desc">Free seats + $100k usage pool + FDE $60k + Premium Support $25k.</div>
+          <div class="id">Quote 0Q0am000002i1ldCAA</div>
+        </div>
+      </div>
+      <p class="receipt-cap r" style="--d:320">Catalog-grounded SKUs, <b>real Salesforce records</b>, and a live order form whose <b>Accept</b> button writes <code>Quote.Status</code> back to Salesforce.</p>
+    </div>
+  </section>
+
+  <!-- 7 — CLOSE -->
+  <section class="slide">
+    <div class="wrap">
+      <div class="kicker r"><span class="bar"></span>07 / The Payoff</div>
+      <div class="arrow-big r" style="--d:60"><span class="from">Hours</span> → <span class="to">seconds.</span></div>
+      <p class="lead r" style="--d:200">Post-call admin that took a rep 3–4 hours now ships in under a minute — real records, self-verified, on any transcript.</p>
+      <div class="close-line r" style="--d:340">The rep closes. The factory ships the deliverables.</div>
+      <div class="demo-cmd r" style="--d:440">live demo &nbsp;→&nbsp; <b>POST /api/recall/replay</b> &nbsp;·&nbsp; <b>npm run e2e</b></div>
+    </div>
+  </section>
+
+</main>
+
+<div class="counter"><b id="cur">01</b> / <span id="tot">08</span></div>
+<div class="dots" id="dots"></div>
+<div class="hint">← → / space</div>
+<div class="nav"><button id="prev" aria-label="Previous">‹</button><button id="next" aria-label="Next">›</button></div>
+
+<script>
+  const slides=[...document.querySelectorAll('.slide')];
+  const n=slides.length, prog=document.getElementById('prog');
+  const cur=document.getElementById('cur'), dotsEl=document.getElementById('dots');
+  document.getElementById('tot').textContent=String(n).padStart(2,'0');
+  let i=0;
+  slides.forEach((_,k)=>{const d=document.createElement('button');d.className='dot';d.setAttribute('aria-label','Slide '+(k+1));d.onclick=()=>go(k);dotsEl.appendChild(d);});
+  const dots=[...dotsEl.children];
+  function go(k){
+    i=Math.max(0,Math.min(n-1,k));
+    slides.forEach((s,j)=>{s.classList.toggle('active',j===i);s.classList.toggle('prev',j<i);});
+    dots.forEach((d,j)=>d.classList.toggle('on',j===i));
+    prog.style.width=((i+1)/n*100)+'%';
+    cur.textContent=String(i+1).padStart(2,'0');
+    location.hash=i+1;
+  }
+  function next(){go(i+1)} function prev(){go(i-1)}
+  document.getElementById('next').onclick=next;
+  document.getElementById('prev').onclick=prev;
+  addEventListener('keydown',e=>{
+    if(['ArrowRight','ArrowDown',' ','PageDown'].includes(e.key)){e.preventDefault();next();}
+    else if(['ArrowLeft','ArrowUp','PageUp'].includes(e.key)){e.preventDefault();prev();}
+    else if(e.key==='Home')go(0); else if(e.key==='End')go(n-1);
+  });
+  // click-to-advance (ignore controls/links)
+  document.getElementById('deck').addEventListener('click',e=>{
+    if(e.target.closest('button,a,.dot')) return;
+    (e.clientX < innerWidth*0.32) ? prev() : next();
+  });
+  // touch swipe
+  let x0=null; addEventListener('touchstart',e=>x0=e.touches[0].clientX,{passive:true});
+  addEventListener('touchend',e=>{if(x0==null)return;const dx=e.changedTouches[0].clientX-x0;if(Math.abs(dx)>50)(dx<0?next():prev());x0=null;},{passive:true});
+  go(Math.max(0,(parseInt(location.hash.slice(1))||1)-1));
+</script>
+</body>
+</html>

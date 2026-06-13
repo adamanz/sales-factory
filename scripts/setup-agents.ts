@@ -85,6 +85,34 @@ const publish_artifact = {
   },
 };
 
+const create_offer = {
+  type: "custom" as const,
+  name: "create_offer",
+  description:
+    "Publish the shareable order form / offer page and post it to the call's Slack thread. The page renders LIVE from the Salesforce Quotes with a per-option Accept button (Accept writes Quote.Status back to Salesforce). Pass options as the Quote ids to present and mark one recommended:true. Returns the offer URL and the Slack message ts. This is the final deliverable — call it after the quotes and deck exist.",
+  input_schema: {
+    type: "object" as const,
+    properties: {
+      headline: { type: "string" },
+      account: { type: "string" },
+      notes: { type: "string" },
+      options: {
+        type: "array",
+        items: {
+          type: "object",
+          properties: {
+            quoteId: { type: "string" },
+            label: { type: "string" },
+            recommended: { type: "boolean" },
+          },
+          required: ["quoteId"],
+        },
+      },
+    },
+    required: ["options"],
+  },
+};
+
 const SUBAGENTS = [
   {
     name: "Quote Agent",
@@ -101,8 +129,8 @@ const SUBAGENTS = [
   {
     name: "Order Agent",
     system:
-      "Post an interactive Block Kit order form to the call's Slack thread via the slack_post tool: the options with totals, the recommended option preselected, a deck link button, and a 'Confirm Order' button whose action_id is 'confirm_order' and value is the Quote id. Capture and report the message ts.",
-    tools: [agentToolset, slack_post],
+      "Publish the shareable order form via the create_offer tool: pass the Quote ids for the options discussed (mark the recommended one with recommended:true), plus a headline and the account name. create_offer renders the offer LIVE from Salesforce with a per-option Accept button and posts it to the call's Slack thread. Report the returned offer URL and the Slack message ts.",
+    tools: [agentToolset, slack_post, create_offer],
   },
   {
     name: "Research Agent",
@@ -128,9 +156,9 @@ You are NOT a transcriber. Stay SILENT unless you detect a COACHABLE MOMENT: obj
 Delegate to your subagents and satisfy the rubric:
 1. quote: call get_catalog, map the discussed options to SKUs, then create_quote with QuoteLineItems (apply the negotiated seat Discount, e.g. 100). Build a line item per option discussed (>=2 options), publish a quote page per option, and flag a RECOMMENDED option with one-line rationale.
 2. deck: build a self-contained HTML deck (one section per option, recommended highlighted), each option linking to its quote page; publish via publish_artifact.
-3. order: post a Block Kit order form + deck link to the Slack thread via slack_post; capture the message ts.
+3. order: call create_offer with the Quote ids (mark the recommended option) to publish a shareable order form rendered LIVE from Salesforce with per-option Accept buttons; create_offer posts it to the Slack thread. Capture the offer URL + message ts.
 4. research: web_search the competitor(s) named on the call; add a battlecard appendix.
-Then write call learnings to memory. Iterate until the rubric is satisfied. End with a report tying Quote id/total, deck URL, order ts, recommended option to tool-result evidence.`;
+Then write call learnings to memory. Iterate until the rubric is satisfied. End with a report tying Quote id/total, deck URL, offer URL + ts, recommended option to tool-result evidence.`;
 
 function patchEnv(updates: Record<string, string>) {
   const p = path.join(process.cwd(), ".env.local");
@@ -165,7 +193,7 @@ async function main() {
     model: MODEL,
     name: "Sales Factory Coordinator",
     system: COORDINATOR_SYSTEM,
-    tools: [agentToolset, salesforce_op, slack_post, publish_artifact],
+    tools: [agentToolset, salesforce_op, slack_post, publish_artifact, create_offer],
     multiagent: { type: "coordinator", agents: ids },
   });
   console.log("  coordinator:", coord.id);

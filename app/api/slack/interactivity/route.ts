@@ -1,10 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { acceptOffer } from "@/lib/accept";
+import { verifySlackSignature } from "@/lib/slack";
 // Slack "Accept" button → close the loop in Salesforce + reply in-thread.
-// Button value is "<quoteId>" or "<quoteId>|<offerId>". (Verify Slack signature in prod.)
+// Button value is "<quoteId>" or "<quoteId>|<offerId>".
 export async function POST(req: NextRequest) {
-  const form = await req.formData();
-  const payload = JSON.parse(String(form.get("payload") || "{}"));
+  // Read the RAW body first so we can verify the Slack signature, then parse the form payload.
+  const raw = await req.text();
+  if (!verifySlackSignature(raw, req.headers.get("x-slack-request-timestamp"), req.headers.get("x-slack-signature"))) {
+    return new NextResponse("bad signature", { status: 401 });
+  }
+  const payload = JSON.parse(new URLSearchParams(raw).get("payload") || "{}");
   const action = payload?.actions?.[0]?.action_id;
   if (action === "confirm_order" || action === "accept_quote") {
     const [quoteId, offerId] = String(payload.actions[0].value || "").split("|");
