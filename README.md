@@ -24,10 +24,18 @@ Recall.ai (calendar auto-join) ──webhooks──▶ RELAY (Next.js, this repo
 ```
 The relay is the **only** self-hosted piece. Slack creds live in an Anthropic **vault**; Salesforce creds stay host-side in the relay (the agent never sees them).
 
-## Status
-- ✅ **Salesforce** fully set up & verified in `simpleco.my.salesforce.com`: Quotes enabled; AI-pricing catalog seeded (`SKU-SEAT/USAGE/FDE/PREMIUM`); demo Account + Opportunity; Quote+QuoteLineItem create (incl. 100%-discount seats) verified; REST token working. IDs in `.env.local`.
-- ✅ Relay scaffold, agent YAMLs, rubric, scripted demo call, e2e harness.
-- ⏳ Needs: `ANTHROPIC_API_KEY`, `RECALL_API_KEY`, Slack MCP URL + OAuth token. Then run setup scripts.
+## Status — ✅ END-TO-END VERIFIED
+A single `POST /api/recall/replay` of the scripted Acme call produced, with no human in the loop:
+- **Live coaching** posted to Slack during the call (coordinator → `slack_post`).
+- **Two real Salesforce Quotes** the prospect asked for, catalog-grounded:
+  - *Lean* — **$100,000** (40 free seats @ 100% discount + $100k usage pool)
+  - *Full (Land + Expand)* — **$185,000** (free seats + $100k usage + FDE $60k + Premium Support $25k)
+- Quote line items use real `PricebookEntry` SKUs; the **discounted-seats / usage-pool AI motion** applied automatically.
+
+Provisioned & working: Salesforce org (Quotes + AI-pricing catalog + demo Opportunity), Managed Agents
+(coordinator + quote/deck/order/research subagents), the relay consumer (`salesforce_op` / `slack_post`
+/ `publish_artifact`), Slack via bot token. Remaining polish: deck/order-form rendering pass, e2e
+outcome-polling, optional Recall live path (replay is the demo spine).
 
 ## Setup
 ```bash

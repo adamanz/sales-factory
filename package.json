@@ -8,7 +8,7 @@
     "start": "next start",
     "e2e": "tsx scripts/e2e.ts",
     "refresh:sf": "tsx scripts/refresh-sf.ts",
-    "setup:agents": "bash scripts/setup-agents.sh",
+    "setup:agents": "tsx scripts/setup-agents.ts",
     "setup:vault": "bash scripts/setup-vault.sh"
   },
   "dependencies": {
