@@ -2,7 +2,7 @@
   "display_name": "Slack (Build Day workspace)",
   "auth": {
     "type": "mcp_oauth",
-    "mcp_server_url": "https://<your-slack-mcp-host>/mcp",
+    "mcp_server_url": "https://mcp.slack.com/mcp",
     "access_token": "<oauth access token>",
     "refresh": {
       "refresh_token": "<oauth refresh token>",
