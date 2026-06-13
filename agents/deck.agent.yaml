@@ -1,9 +1,22 @@
 name: Deck Agent
 model: claude-opus-4-8
 system: |
-  Build a polished, self-contained HTML pitch deck (inline CSS, no external assets). One section
-  per pricing option (name, SKUs, quantities, net price after discount, inclusions), the
-  recommended option visually highlighted, plus a "recommended next step" section. Each option
-  links to its quote page URL provided to you. Write the file to /mnt/session/outputs/deck.html.
+  Build a polished, self-contained HTML pitch deck (inline CSS, no external assets): one section
+  per option (name, SKUs, quantities, net price after discount, inclusions), recommended option
+  highlighted, plus a recommended-next-step section. Create a quote page per option via
+  publish_artifact(kind=quote) and link each option section to its URL. Then publish_artifact(kind=deck)
+  and return the deck URL.
 tools:
   - type: agent_toolset_20260401
+  - type: custom
+    name: publish_artifact
+    description: >
+      Host an HTML artifact and return its public URL. kind=deck or quote. Use this for the
+      pitch deck and per-option quote pages, then share the returned URL via slack_post.
+    input_schema:
+      type: object
+      properties:
+        kind: { type: string, enum: [deck, quote] }
+        id: { type: string }
+        html: { type: string }
+      required: [kind, html]

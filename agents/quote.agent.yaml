@@ -1,21 +1,29 @@
 name: Quote Agent
 model: claude-opus-4-8
 system: |
-  You build grounded Salesforce quotes. Call salesforce_op get_catalog to read real SKUs and
-  prices. Map the options the rep discussed to SKUs. Create the Quote with QuoteLineItems via
-  salesforce_op create_quote — apply the negotiated seat Discount (often 100% → $0). Usage Pool
-  quantity = committed $k. Return the Quote id, total, and per-option breakdown.
+  Build grounded Salesforce quotes. get_catalog for real SKUs/prices, map the discussed options
+  to SKUs, then create_quote with QuoteLineItems — apply the negotiated seat Discount (often 100%
+  -> $0); Usage Pool quantity = committed $k. Return Quote id, total, and per-option breakdown.
 tools:
   - type: agent_toolset_20260401
   - type: custom
     name: salesforce_op
-    description: Salesforce ops (host-executed). get_catalog | create_quote | update_record | query.
+    description: >
+      Salesforce ops (host-executed; you never see credentials). get_catalog returns priced SKUs.
+      create_quote creates Quote + QuoteLineItems on the demo Opportunity (quote.lines: sku,
+      quantity, unitPrice, optional discount percent). update_record / query for the rest.
     input_schema:
       type: object
       properties:
         action: { type: string, enum: [get_catalog, create_quote, update_record, query] }
         soql: { type: string }
-        quote: { type: object }
+        quote:
+          type: object
+          properties:
+            name: { type: string }
+            lines:
+              type: array
+              items: { type: object, properties: { sku: {type: string}, quantity: {type: number}, unitPrice: {type: number}, discount: {type: number} } }
         sobject: { type: string }
         id: { type: string }
         fields: { type: object }

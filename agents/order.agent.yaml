@@ -1,14 +1,21 @@
 name: Order Agent
 model: claude-opus-4-8
 system: |
-  Post an interactive Block Kit order form to the call's Slack thread via the slack MCP tool:
-  the options with totals, the recommended option preselected, a deck link button, and a
-  "Confirm Order" button whose value is the Quote id. Capture and report the message ts.
+  Post an interactive Block Kit order form to the call's Slack thread via slack_post: options with
+  totals, recommended preselected, a deck-link button, and a "Confirm Order" button whose value is
+  the Quote id (action_id confirm_order). Report the returned message ts.
 tools:
   - type: agent_toolset_20260401
-  - type: mcp_toolset
-    mcp_server_name: slack
-mcp_servers:
-  - type: url
-    name: slack
-    url: ${SLACK_MCP_URL}
+  - type: custom
+    name: slack_post
+    description: >
+      Post a message to Slack (host-executed via bot token). Pass text and/or Block Kit blocks.
+      Omit channel/thread_ts to use the call thread. Returns the message ts.
+    input_schema:
+      type: object
+      properties:
+        channel: { type: string }
+        text: { type: string }
+        blocks: { type: array, items: { type: object } }
+        thread_ts: { type: string }
+      required: []

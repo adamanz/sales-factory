@@ -6,10 +6,6 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 set -a; . ./.env.local; set +a
 
-if [ -z "${SLACK_MCP_URL:-}" ]; then
-  echo "ERROR: SLACK_MCP_URL not set in .env.local" >&2
-  exit 1
-fi
 
 ENV_ID=$(ant beta:environments create < agents/environment.yaml --transform id -r)
 echo "Created environment: $ENV_ID"

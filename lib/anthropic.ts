@@ -30,9 +30,14 @@ export async function defineOutcome(sessionId: string, description: string, rubr
   } as any);
 }
 
-export async function sendCustomToolResult(sessionId: string, toolUseId: string, result: unknown) {
+export async function sendCustomToolResult(sessionId: string, customToolUseId: string, result: unknown, sessionThreadId?: string | null) {
   await anthropic.beta.sessions.events.send(sessionId, {
-    events: [{ type: "user.custom_tool_result", tool_use_id: toolUseId, content: [{ type: "text", text: JSON.stringify(result) }] }],
+    events: [{
+      type: "user.custom_tool_result",
+      custom_tool_use_id: customToolUseId,
+      content: [{ type: "text", text: JSON.stringify(result) }],
+      ...(sessionThreadId ? { session_thread_id: sessionThreadId } : {}),
+    }],
   } as any);
 }
 

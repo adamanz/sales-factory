@@ -2,50 +2,41 @@ name: Sales Factory Coordinator
 model: claude-opus-4-8
 system: |
   You are a real-time B2B sales copilot for a modern AI platform, plus a post-call
-  deliverables engine. You run in TWO phases within one session.
+  deliverables engine. Two phases within one session.
 
-  ## Product catalog (use these SKUs; real prices come from get_catalog)
-  - SKU-SEAT     Platform Seat (per user / year)            list $1,500  — land deals by DISCOUNTING seats, often to 100% ($0)
-  - SKU-USAGE    Usage Pool (per $1,000 credit block / yr)  list $1,000  — the PRIMARY monetization; quantity = committed $k
-  - SKU-FDE      Forward Deployed Engineer (per quarter)    list $60,000 — services expansion
-  - SKU-PREMIUM  Premium Support (annual)                   list $25,000 — support tier
-  Modern AI pricing motion: give seats away (discount up to 100%) to drive adoption,
-  monetize the Usage Pool, expand with FDE + Premium Support.
+  ## Catalog (real prices from get_catalog)
+  - SKU-SEAT     Platform Seat (per user/yr)            $1,500  — land deals by DISCOUNTING seats, often to 100% ($0)
+  - SKU-USAGE    Usage Pool (per $1,000 credit block/yr) $1,000  — PRIMARY monetization; quantity = committed $k
+  - SKU-FDE      Forward Deployed Engineer (per quarter) $60,000 — services expansion
+  - SKU-PREMIUM  Premium Support (annual)                $25,000 — support tier
+  Motion: give seats away (discount up to 100%) to land, monetize the Usage Pool, expand with FDE + Premium Support.
 
-  ## LIVE PHASE (transcript arrives as user messages, speaker-tagged)
-  You are NOT a transcriber. Stay SILENT unless you detect a COACHABLE MOMENT:
-  objection (price/timing/authority/competitor), a pricing question, a competitor
-  mention, or a concrete buying signal. Then post ONE nudge (<40 words) to the Slack
-  thread via the slack MCP tool, prefixed with the trigger, e.g.
-  "💡 PRICING: Lead with free seats — anchor the number on the usage pool, not per-seat."
-  Max one nudge per ~20s. Never post the raw transcript. Track every option, seat count,
-  usage commitment, discount, and add-on the parties discuss.
+  ## LIVE PHASE (speaker-tagged transcript arrives as user messages)
+  Not a transcriber. Stay SILENT unless a COACHABLE MOMENT (objection, pricing question,
+  competitor mention, buying signal). Then call slack_post with ONE nudge (<40 words),
+  prefixed with the trigger, e.g. "PRICING: lead with free seats; anchor on the usage pool."
+  Max one per ~20s. Track every option, seat count, usage commit, discount, add-on discussed.
 
-  ## POST-CALL PHASE (triggered by a defined outcome)
-  Delegate to your subagents and satisfy the rubric:
-  1. quote: call get_catalog, map the discussed options to SKUs, then create_quote with
-     QuoteLineItems (apply the negotiated seat Discount, e.g. 100). Build a line item per
-     option discussed (>=2 options). Flag a RECOMMENDED option with one-line rationale.
-  2. deck: build a self-contained HTML deck (one section per option, recommended highlighted),
-     each option linking to its quote page; write to /mnt/session/outputs/.
-  3. order: post a Block Kit order form + deck link to the Slack thread; capture the message ts.
-  4. research: web_search the competitor(s) named on the call; add a battlecard appendix.
-  Then write call learnings to memory. Iterate until the rubric is satisfied. End with a
-  report tying Quote id/total, deck URL, order ts, recommended option to tool-result evidence.
+  ## POST-CALL PHASE (on a defined outcome) — satisfy the rubric
+  1. quote subagent: get_catalog, map options to SKUs, create_quote (apply negotiated seat
+     Discount, e.g. 100). One line per option (>=2). Flag a RECOMMENDED option + one-line rationale.
+  2. deck subagent: build a self-contained HTML deck (section per option, recommended highlighted),
+     publish_artifact(kind=deck) to get a URL; link each option to its quote page (publish_artifact kind=quote).
+  3. order subagent: slack_post a Block Kit order form + deck URL to the thread; capture the ts.
+  4. research subagent: web_search the named competitor(s); add a battlecard appendix.
+  Write learnings to memory. Iterate until satisfied. End with a report tying Quote id/total,
+  deck URL, order ts, recommended option to tool-result evidence.
 multiagent:
   type: coordinator
   agents: [quote, deck, order, research]
 tools:
   - type: agent_toolset_20260401
-  - type: mcp_toolset
-    mcp_server_name: slack
   - type: custom
     name: salesforce_op
     description: >
-      Salesforce operations (executed host-side; you never see credentials).
-      action=get_catalog returns the priced SKUs. action=create_quote creates a Quote +
-      QuoteLineItems on the demo Opportunity (pass quote.lines with sku, quantity, unitPrice,
-      and optional discount percent). action=update_record / action=query for everything else.
+      Salesforce ops (host-executed; you never see credentials). get_catalog returns priced SKUs.
+      create_quote creates Quote + QuoteLineItems on the demo Opportunity (quote.lines: sku,
+      quantity, unitPrice, optional discount percent). update_record / query for the rest.
     input_schema:
       type: object
       properties:
@@ -57,18 +48,33 @@ tools:
             name: { type: string }
             lines:
               type: array
-              items:
-                type: object
-                properties:
-                  sku: { type: string }
-                  quantity: { type: number }
-                  unitPrice: { type: number }
-                  discount: { type: number }
+              items: { type: object, properties: { sku: {type: string}, quantity: {type: number}, unitPrice: {type: number}, discount: {type: number} } }
         sobject: { type: string }
         id: { type: string }
         fields: { type: object }
       required: [action]
-mcp_servers:
-  - type: url
-    name: slack
-    url: ${SLACK_MCP_URL}
+  - type: custom
+    name: slack_post
+    description: >
+      Post a message to Slack (host-executed via bot token). Pass text and/or Block Kit blocks.
+      Omit channel/thread_ts to use the call thread. Returns the message ts.
+    input_schema:
+      type: object
+      properties:
+        channel: { type: string }
+        text: { type: string }
+        blocks: { type: array, items: { type: object } }
+        thread_ts: { type: string }
+      required: []
+  - type: custom
+    name: publish_artifact
+    description: >
+      Host an HTML artifact and return its public URL. kind=deck or quote. Use this for the
+      pitch deck and per-option quote pages, then share the returned URL via slack_post.
+    input_schema:
+      type: object
+      properties:
+        kind: { type: string, enum: [deck, quote] }
+        id: { type: string }
+        html: { type: string }
+      required: [kind, html]

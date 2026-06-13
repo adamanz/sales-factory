@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
 import { store } from "@/lib/store";
 import { createCallSession, sendUserMessage, defineOutcome } from "@/lib/anthropic";
+import { runConsumer } from "@/lib/consumer";
 import { pushChunk, doFlush } from "@/lib/transcript";
 import fs from "fs";
 import path from "path";
@@ -26,8 +27,8 @@ export async function POST(req: NextRequest) {
       if ((code === "in_call_recording" || code === "in_call") && botId && !store.get(botId)) {
         // TODO: create Slack thread (via Slack MCP-driven priming or relay fallback) + memory store
         const session = await createCallSession({ memoryStoreId: undefined });
-        store.set({ botId, sessionId: session.id, opportunityId: process.env.SF_OPPORTUNITY_ID!, quoteIds: [] });
-        // TODO: open SSE stream consumer BEFORE first message (see scripts/consumer.ts)
+        store.set({ botId, sessionId: session.id, channelId: process.env.SLACK_CHANNEL_ID, opportunityId: process.env.SF_OPPORTUNITY_ID!, quoteIds: [] });
+        runConsumer(session.id); // open the stream before sending events (handles salesforce_op/slack_post/publish_artifact)
         await sendUserMessage(session.id, "A sales call just started. Coach live; track every pricing option discussed.");
       }
       break;
