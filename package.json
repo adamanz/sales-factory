@@ -10,6 +10,7 @@
     "refresh:sf": "tsx scripts/refresh-sf.ts",
     "demo:build": "tsx --env-file=.env.local scripts/demo-build.ts",
     "demo:reset": "tsx --env-file=.env.local scripts/demo-reset.ts",
+    "verify:close": "tsx --env-file=.env.local scripts/verify-close.ts",
     "recall:test": "tsx scripts/recall-test.ts",
     "slack:test": "tsx --env-file=.env.local scripts/slack-test.ts",
     "setup:agents": "tsx scripts/setup-agents.ts",
