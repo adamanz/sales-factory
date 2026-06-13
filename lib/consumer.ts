@@ -4,6 +4,7 @@ import { anthropic, sendCustomToolResult } from "./anthropic";
 import * as sf from "./salesforce";
 import { postMessage } from "./slack";
 import { artifacts } from "./artifacts";
+import { offers } from "./offers";
 import { store } from "./store";
 
 const PBE: Record<string, string | undefined> = {
@@ -50,6 +51,12 @@ function publishArtifact(input: any) {
   return { url: `${process.env.PUBLIC_BASE_URL || "http://localhost:3000"}/api/${kind}/${id}`, id };
 }
 
+function createOffer(input: any) {
+  const id = input.id || `of-${++artifactSeq}-${Date.now().toString(36)}`;
+  offers.put(id, { headline: input.headline, account: input.account, notes: input.notes, options: input.options || [] });
+  return { url: `${process.env.PUBLIC_BASE_URL || "http://localhost:3000"}/api/of/${id}`, id };
+}
+
 export async function runConsumer(sessionId: string) {
   // Stay alive through the whole call: handle every custom tool, and only stop once
   // the outcome has actually completed (or the session terminates). Do NOT break on
@@ -66,6 +73,7 @@ export async function runConsumer(sessionId: string) {
           if (ev.name === "salesforce_op") result = await salesforceOp(ev.input);
           else if (ev.name === "slack_post") result = await slackPost(ev.input, sessionId);
           else if (ev.name === "publish_artifact") result = publishArtifact(ev.input);
+          else if (ev.name === "create_offer") result = createOffer(ev.input);
           else result = { error: `unknown tool ${ev.name}` };
         } catch (e: any) { result = { error: String(e?.message || e) }; }
         await sendCustomToolResult(sessionId, ev.id, result, ev.session_thread_id);

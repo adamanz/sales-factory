@@ -8,19 +8,20 @@
     "start": "next start",
     "e2e": "tsx scripts/e2e.ts",
     "refresh:sf": "tsx scripts/refresh-sf.ts",
+    "recall:test": "tsx scripts/recall-test.ts",
     "setup:agents": "tsx scripts/setup-agents.ts",
     "setup:vault": "bash scripts/setup-vault.sh"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "latest",
-    "next": "^15.1.6",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "@anthropic-ai/sdk": "0.104.1",
+    "next": "^16.2.9",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7"
   },
   "devDependencies": {
-    "@types/node": "^22",
-    "@types/react": "^19",
-    "tsx": "^4.19.2",
-    "typescript": "^5.7"
+    "@types/node": "^25.9.3",
+    "@types/react": "^19.2.17",
+    "tsx": "^4.22.4",
+    "typescript": "^6.0.3"
   }
 }

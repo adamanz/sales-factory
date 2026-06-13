@@ -21,6 +21,15 @@ export async function POST(req: NextRequest) {
   const event = JSON.parse(raw);
   const botId = event?.data?.bot_id;
 
+  // Debug: log every Recall event so we can verify real-time transcript delivery.
+  if (event.event === "bot.transcription") {
+    const t = event.data?.transcript;
+    const words = t?.words?.map((w: any) => w.text).join(" ") || t?.text || "";
+    console.log(`[recall] transcription bot=${botId} [${t?.speaker || "?"}] ${words}`);
+  } else {
+    console.log(`[recall] ${event.event} bot=${botId} status=${event?.data?.status?.code || ""}`);
+  }
+
   switch (event.event) {
     case "bot.status_change": {
       const code = event?.data?.status?.code;
