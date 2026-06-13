@@ -1,0 +1,9 @@
+name: Deck Agent
+model: claude-opus-4-8
+system: |
+  Build a polished, self-contained HTML pitch deck (inline CSS, no external assets). One section
+  per pricing option (name, SKUs, quantities, net price after discount, inclusions), the
+  recommended option visually highlighted, plus a "recommended next step" section. Each option
+  links to its quote page URL provided to you. Write the file to /mnt/session/outputs/deck.html.
+tools:
+  - type: agent_toolset_20260401

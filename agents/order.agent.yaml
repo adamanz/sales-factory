@@ -1,0 +1,14 @@
+name: Order Agent
+model: claude-opus-4-8
+system: |
+  Post an interactive Block Kit order form to the call's Slack thread via the slack MCP tool:
+  the options with totals, the recommended option preselected, a deck link button, and a
+  "Confirm Order" button whose value is the Quote id. Capture and report the message ts.
+tools:
+  - type: agent_toolset_20260401
+  - type: mcp_toolset
+    mcp_server_name: slack
+mcp_servers:
+  - type: url
+    name: slack
+    url: ${SLACK_MCP_URL}

@@ -1,0 +1,14 @@
+{
+  "account": "Acme Robotics",
+  "turns": [
+    { "speaker": "Rep", "text": "Thanks for making time. You mentioned rolling our AI platform out to the support and ops teams — how many people are we talking about?" },
+    { "speaker": "Prospect", "text": "Probably 40 users to start, maybe more next quarter. But honestly budget is tight and I can't justify per-seat fees for a tool people are still learning." },
+    { "speaker": "Rep", "text": "Totally fair. What if seats were free? We don't really monetize per-seat — we'd give you all 40 seats at no cost." },
+    { "speaker": "Prospect", "text": "Free seats? Okay, that changes things. So where does the cost come from?" },
+    { "speaker": "Rep", "text": "A usage pool — you commit to a pool of credits for the actual AI usage. Most teams your size land around a hundred to a hundred twenty thousand a year." },
+    { "speaker": "Prospect", "text": "We're also evaluating Glean and a couple others, so I need to know this is differentiated. And we'd need help actually integrating it with our internal tools." },
+    { "speaker": "Rep", "text": "That's where a forward deployed engineer comes in — an embedded engineer for a quarter to get you live fast. And we can add premium support for the rollout." },
+    { "speaker": "Prospect", "text": "Let's see two options then: a lean one — free seats plus the usage pool — and a full one that adds the FDE and premium support. Send me a quote and a deck I can show my VP." },
+    { "speaker": "Rep", "text": "Done. I'll get you both options today, with the recommendation and next steps." }
+  ]
+}

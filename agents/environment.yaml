@@ -1,0 +1,5 @@
+name: sales-factory-env
+config:
+  type: cloud
+  networking:
+    type: unrestricted

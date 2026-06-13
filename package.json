@@ -1,0 +1,26 @@
+{
+  "name": "sales-factory",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "e2e": "tsx scripts/e2e.ts",
+    "refresh:sf": "tsx scripts/refresh-sf.ts",
+    "setup:agents": "bash scripts/setup-agents.sh",
+    "setup:vault": "bash scripts/setup-vault.sh"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "latest",
+    "next": "^15.1.6",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22",
+    "@types/react": "^19",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7"
+  }
+}

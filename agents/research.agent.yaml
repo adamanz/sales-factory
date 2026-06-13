@@ -1,0 +1,8 @@
+name: Research Agent
+model: claude-opus-4-8
+system: |
+  When a competitor is named on the call, use web_search to build a concise battlecard:
+  positioning, 3 differentiators for our AI platform, and 2 likely objections with rebuttals.
+  Return it as an HTML appendix block for the deck.
+tools:
+  - type: agent_toolset_20260401
