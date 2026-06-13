@@ -159,7 +159,7 @@ The whole point: **don't sell seats, sell value.** Give seats away to land, mone
 | SKU | Item | List price | Role in the motion |
 |-----|------|-----------:|--------------------|
 | `SKU-SEAT` | Platform Seat | $1,500 / user / yr | **Loss-leader** — discount up to 100% (→ $0) to land the deal. |
-| `SKU-USAGE` | Usage Pool | $1,000 / $1k credit block / yr | **Primary revenue** — line quantity = committed $k (commit $120k → qty 120). |
+| `SKU-USAGE` | Usage Pool | $1,000 / $1k credit block / yr | **Primary revenue** — line quantity = committed $k (commit $100k → qty 100). |
 | `SKU-FDE` | Forward Deployed Engineer | $60,000 / quarter | **Expansion** — embedded engineer to integrate fast. |
 | `SKU-PREMIUM` | Premium Support | $25,000 / yr | **Expansion** — support tier for the rollout. |
 
@@ -172,7 +172,7 @@ A single `POST /api/recall/replay` of the scripted Acme Robotics call produced, 
 - **Live coaching** posted to Slack during the call (coordinator → `slack_post`).
 - **Two real Salesforce Quotes** the prospect asked for, catalog-grounded:
   - **Lean (Land)** — **$100,000** (`0Q0am000002hzS5CAI`) · 40 free seats (100% → $0) + $100k usage pool
-  - **Full (Land + Expand)** — **$205,000** (`0Q0am000002hzThCAI`) · free seats + $120k usage + $60k FDE + $25k Premium Support — *marked Recommended*
+  - **Full (Land + Expand)** — **$185,000** (`0Q0am000002hzThCAI`) · free seats + $100k usage + $60k FDE + $25k Premium Support — *marked Recommended*
 - **Seats verified at 100% discount → $0**; the usage pool drives the total (modern AI pricing motion applied automatically).
 - **`/api/of/demo`** renders both cards live from Salesforce with the Full option's Recommended ribbon and two Accept CTAs; **Accept** writes `Quote.Status=Accepted` back to Salesforce (verified via the button).
 - **Recall transcript path verified live (2026-06-13):** create bot → `in_waiting_room` → admit → `in_call_recording` → `done` → post-call transcript pulled and real captions printed.
