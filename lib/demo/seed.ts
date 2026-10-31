@@ -1,0 +1,481 @@
+import { quoteTotal } from "./format";
+import type { DemoCall, DemoQuote, QuoteLine } from "./types";
+
+const seat = (note: string): QuoteLine => ({
+  sku: "SKU-SEAT",
+  name: "Platform Seat",
+  quantity: 40,
+  unitPrice: 1500,
+  discount: 100,
+  note,
+});
+
+const usage: QuoteLine = {
+  sku: "SKU-USAGE",
+  name: "Usage Pool",
+  quantity: 100,
+  unitPrice: 1000,
+  discount: 0,
+  note: "100 credit blocks at $1,000. Quantity is the committed thousands.",
+};
+
+const fde: QuoteLine = {
+  sku: "SKU-FDE",
+  name: "Forward Deployed Engineer",
+  quantity: 1,
+  unitPrice: 60000,
+  discount: 0,
+  note: "One quarter, embedded with the team.",
+};
+
+const premium: QuoteLine = {
+  sku: "SKU-PREMIUM",
+  name: "Premium Support",
+  quantity: 1,
+  unitPrice: 25000,
+  discount: 0,
+  note: "Annual support for the rollout.",
+};
+
+function quote(input: Omit<DemoQuote, "total" | "lines"> & { lines: QuoteLine[] }): DemoQuote {
+  return { ...input, total: quoteTotal(input.lines) };
+}
+
+const leanLines = [
+  seat("40 platform seats, waived. The per-seat fee Dana pushed back on."),
+  usage,
+];
+
+const fullLines = [
+  seat("40 platform seats, waived on this option too."),
+  usage,
+  fde,
+  premium,
+];
+
+export const demoCalls: DemoCall[] = [
+  {
+    id: "acme",
+    account: "Acme Robotics",
+    opportunity: "Platform rollout",
+    prospect: "Dana Reyes",
+    prospectTitle: "VP, Engineering",
+    rep: "Riley Chen",
+    whenLabel: "Today, 9:40 AM",
+    durationLabel: "8 min",
+    durationSec: 210,
+    quoteAtSec: 190,
+    outcome: "Two quotes ready",
+    turns: [
+      {
+        id: "acme-t1",
+        atSec: 0,
+        speaker: "Rep",
+        text: "Thanks for making time. You mentioned rolling our AI platform out to the support and ops teams. How many people are we talking about?",
+      },
+      {
+        id: "acme-t2",
+        atSec: 24,
+        speaker: "Prospect",
+        text: "Probably 40 users to start, maybe more next quarter. But honestly budget is tight and I can't justify per-seat fees for a tool people are still learning.",
+      },
+      {
+        id: "acme-t3",
+        atSec: 48,
+        speaker: "Rep",
+        text: "Totally fair. What if seats were free? We don't really monetize per-seat. We'd give you all 40 seats at no cost.",
+      },
+      {
+        id: "acme-t4",
+        atSec: 68,
+        speaker: "Prospect",
+        text: "Free seats? Okay, that changes things. So where does the cost come from?",
+      },
+      {
+        id: "acme-t5",
+        atSec: 84,
+        speaker: "Rep",
+        text: "A usage pool. You commit to a pool of credits for the actual AI usage. Most teams your size land around a hundred to a hundred twenty thousand a year.",
+      },
+      {
+        id: "acme-t6",
+        atSec: 112,
+        speaker: "Prospect",
+        text: "We're also evaluating Glean and a couple others, so I need to know this is differentiated. And we'd need help actually integrating it with our internal tools.",
+      },
+      {
+        id: "acme-t7",
+        atSec: 136,
+        speaker: "Rep",
+        text: "That's where a forward deployed engineer comes in. An embedded engineer for a quarter to get you live fast. And we can add premium support for the rollout.",
+      },
+      {
+        id: "acme-t8",
+        atSec: 162,
+        speaker: "Prospect",
+        text: "Let's see two options then: a lean one, free seats plus the usage pool, and a full one that adds the FDE and premium support. Send me a quote and a deck I can show my VP.",
+      },
+      {
+        id: "acme-t9",
+        atSec: 184,
+        speaker: "Rep",
+        text: "Done. I'll get you both options today, with the recommendation and next steps.",
+      },
+    ],
+    tips: [
+      {
+        id: "acme-tip-1",
+        callId: "acme",
+        atSec: 30,
+        startMs: 24000,
+        endMs: 42000,
+        speaker: "Prospect",
+        quote: "I can't justify per-seat fees",
+        tip: "Dana named the constraint: per-seat fees while the team is still learning. Answer that before you open the catalog.",
+        kind: "pricing",
+      },
+      {
+        id: "acme-tip-2",
+        callId: "acme",
+        atSec: 118,
+        startMs: 112000,
+        endMs: 130000,
+        speaker: "Prospect",
+        quote: "We're also evaluating Glean",
+        tip: "Glean is on the table, and so is integration help. Separate those. Search is not the same job as an embedded engineer.",
+        kind: "competitor",
+      },
+      {
+        id: "acme-tip-3",
+        callId: "acme",
+        atSec: 170,
+        startMs: 162000,
+        endMs: 180000,
+        speaker: "Prospect",
+        quote: "Send me a quote and a deck I can show my VP.",
+        tip: "This is the close. Two written options, lean and full, today. The VP is the next reader, so the recommendation has to be obvious on the page.",
+        kind: "next_step",
+      },
+    ],
+    nudges: [
+      {
+        id: "acme-nudge-1",
+        callId: "acme",
+        atSec: 32,
+        trigger: "PRICING",
+        text: "Lead with free seats. Anchor the number on the usage pool, not per seat.",
+        evidence: "I can't justify per-seat fees",
+      },
+      {
+        id: "acme-nudge-2",
+        callId: "acme",
+        atSec: 120,
+        trigger: "COMPETITOR",
+        text: "Glean is search. Ask what they would still have to build, then bring up the embedded engineer.",
+        evidence: "We're also evaluating Glean",
+      },
+      {
+        id: "acme-nudge-3",
+        callId: "acme",
+        atSec: 172,
+        trigger: "BUYING_SIGNAL",
+        text: "They asked for two options and a deck for the VP. Confirm lean and full before you leave the call.",
+        evidence: "Send me a quote and a deck I can show my VP.",
+      },
+    ],
+    quotes: [
+      quote({
+        id: "sample-lean",
+        name: "Lean",
+        recommended: false,
+        summary: "40 seats at $0, plus a $100,000 usage pool.",
+        lines: leanLines,
+      }),
+      quote({
+        id: "sample-full",
+        name: "Full",
+        recommended: true,
+        summary: "Everything in Lean, plus a forward deployed engineer and premium support.",
+        lines: fullLines,
+      }),
+    ],
+    slots: [
+      {
+        id: "acme-slot-1",
+        callId: "acme",
+        start: "2026-11-03T10:30:00-08:00",
+        end: "2026-11-03T11:00:00-08:00",
+        withWhom: "Dana Reyes",
+      },
+      {
+        id: "acme-slot-2",
+        callId: "acme",
+        start: "2026-11-04T14:00:00-08:00",
+        end: "2026-11-04T14:30:00-08:00",
+        withWhom: "Dana Reyes",
+      },
+      {
+        id: "acme-slot-3",
+        callId: "acme",
+        start: "2026-11-05T09:00:00-08:00",
+        end: "2026-11-05T09:30:00-08:00",
+        withWhom: "Dana Reyes and her VP",
+      },
+    ],
+  },
+  {
+    id: "northwind",
+    account: "Northwind Logistics",
+    opportunity: "Ops planning",
+    prospect: "Priya Shah",
+    prospectTitle: "Head of Operations",
+    rep: "Riley Chen",
+    whenLabel: "Yesterday, 2:10 PM",
+    durationLabel: "11 min",
+    durationSec: 160,
+    quoteAtSec: 160,
+    outcome: "Working session set",
+    turns: [
+      {
+        id: "nw-t1",
+        atSec: 0,
+        speaker: "Rep",
+        text: "Before I talk about the product, how does the ops team plan capacity today?",
+      },
+      {
+        id: "nw-t2",
+        atSec: 18,
+        speaker: "Prospect",
+        text: "Spreadsheets, mostly. We miss the Thursday cutoff when a lane spikes.",
+      },
+      {
+        id: "nw-t3",
+        atSec: 40,
+        speaker: "Rep",
+        text: "When a lane spikes, what does that cost you in a week?",
+      },
+      {
+        id: "nw-t4",
+        atSec: 58,
+        speaker: "Prospect",
+        text: "Last month it was about forty overtime shifts. I can pull the sheet.",
+      },
+      {
+        id: "nw-t5",
+        atSec: 82,
+        speaker: "Rep",
+        text: "Please do. If I send a short agenda, can we work from that sheet on Thursday at 10:30?",
+      },
+      {
+        id: "nw-t6",
+        atSec: 104,
+        speaker: "Prospect",
+        text: "Thursday at 10:30 works. I'll bring the lane sheet and my director can join for the last ten minutes.",
+      },
+    ],
+    tips: [
+      {
+        id: "nw-tip-1",
+        callId: "northwind",
+        atSec: 8,
+        startMs: 0,
+        endMs: 16000,
+        speaker: "Rep",
+        quote: "how does the ops team plan capacity today?",
+        tip: "Open question, and it landed before any product talk. Stay on the overtime number she just gave you.",
+        kind: "discovery",
+      },
+      {
+        id: "nw-tip-2",
+        callId: "northwind",
+        atSec: 110,
+        startMs: 104000,
+        endMs: 120000,
+        speaker: "Prospect",
+        quote: "Thursday at 10:30 works",
+        tip: "The next step has a day, a time, and a second person. Repeat all three out loud before you hang up.",
+        kind: "next_step",
+      },
+    ],
+    nudges: [
+      {
+        id: "nw-nudge-1",
+        callId: "northwind",
+        atSec: 64,
+        trigger: "PRICING",
+        text: "Stay on the overtime number before you mention a product. Forty shifts is the pain.",
+        evidence: "forty overtime shifts",
+      },
+      {
+        id: "nw-nudge-2",
+        callId: "northwind",
+        atSec: 112,
+        trigger: "NEXT_STEP",
+        text: "They named Thursday at 10:30 and a director for the last ten minutes. Repeat both before you wrap.",
+        evidence: "Thursday at 10:30 works",
+      },
+    ],
+    quotes: [],
+    slots: [
+      {
+        id: "nw-slot-1",
+        callId: "northwind",
+        start: "2026-11-05T10:30:00-08:00",
+        end: "2026-11-05T11:00:00-08:00",
+        withWhom: "Priya Shah and her director",
+      },
+      {
+        id: "nw-slot-2",
+        callId: "northwind",
+        start: "2026-11-06T13:00:00-08:00",
+        end: "2026-11-06T13:30:00-08:00",
+        withWhom: "Priya Shah",
+      },
+    ],
+  },
+  {
+    id: "brightline",
+    account: "Brightline Health",
+    opportunity: "Forecasting pilot",
+    prospect: "Chris Lang",
+    prospectTitle: "Director of IT",
+    rep: "Riley Chen",
+    whenLabel: "Monday, 4:05 PM",
+    durationLabel: "9 min",
+    durationSec: 150,
+    quoteAtSec: 150,
+    outcome: "Objections missed",
+    turns: [
+      {
+        id: "bl-t1",
+        atSec: 0,
+        speaker: "Rep",
+        text: "I'll walk you through the whole platform, the forecast module, the security whitepaper, and the rollout plan.",
+      },
+      {
+        id: "bl-t2",
+        atSec: 22,
+        speaker: "Prospect",
+        text: "It does the job.",
+      },
+      {
+        id: "bl-t3",
+        atSec: 36,
+        speaker: "Rep",
+        text: "The forecast module alone usually pays for the rollout, and we can schedule a security review whenever you are ready to see the architecture.",
+      },
+      {
+        id: "bl-t4",
+        atSec: 62,
+        speaker: "Prospect",
+        text: "We're a healthcare company, so security is a big concern for us.",
+      },
+      {
+        id: "bl-t5",
+        atSec: 80,
+        speaker: "Rep",
+        text: "We are SOC 2 and HIPAA, and I can send the packet after this call along with three customer stories.",
+      },
+      {
+        id: "bl-t6",
+        atSec: 104,
+        speaker: "Prospect",
+        text: "I'm not sure we need forecasting right now.",
+      },
+      {
+        id: "bl-t7",
+        atSec: 120,
+        speaker: "Rep",
+        text: "A lot of teams say that and then start with forecasting anyway. I can send a deck this afternoon.",
+      },
+    ],
+    tips: [
+      {
+        id: "bl-tip-1",
+        callId: "brightline",
+        atSec: 6,
+        startMs: 0,
+        endMs: 18000,
+        speaker: "Rep",
+        quote: "I'll walk you through the whole platform",
+        tip: "The call opened on a tour. Chris has not said what is broken yet. Ask that before the next feature.",
+        kind: "monologue",
+      },
+      {
+        id: "bl-tip-2",
+        callId: "brightline",
+        atSec: 68,
+        startMs: 62000,
+        endMs: 76000,
+        speaker: "Prospect",
+        quote: "security is a big concern for us",
+        tip: "Security was named and the reply was a certification list. Ask which review would block a pilot.",
+        kind: "objection",
+      },
+      {
+        id: "bl-tip-3",
+        callId: "brightline",
+        atSec: 110,
+        startMs: 104000,
+        endMs: 118000,
+        speaker: "Prospect",
+        quote: "I'm not sure we need forecasting right now.",
+        tip: "Need is the third objection. A deck this afternoon does not answer it. Ask what Chris would fix this quarter.",
+        kind: "objection",
+      },
+    ],
+    nudges: [
+      {
+        id: "bl-nudge-1",
+        callId: "brightline",
+        atSec: 70,
+        trigger: "OBJECTION",
+        text: "They raised security. Ask which review would block a pilot, then stop the feature tour.",
+        evidence: "security is a big concern for us",
+      },
+      {
+        id: "bl-nudge-2",
+        callId: "brightline",
+        atSec: 112,
+        trigger: "OBJECTION",
+        text: "They are not sure they need forecasting. Ask what they would fix this quarter before you pitch the module.",
+        evidence: "I'm not sure we need forecasting right now.",
+      },
+    ],
+    quotes: [],
+    slots: [
+      {
+        id: "bl-slot-1",
+        callId: "brightline",
+        start: "2026-11-04T11:00:00-08:00",
+        end: "2026-11-04T11:30:00-08:00",
+        withWhom: "Chris Lang",
+      },
+      {
+        id: "bl-slot-2",
+        callId: "brightline",
+        start: "2026-11-06T15:00:00-08:00",
+        end: "2026-11-06T15:30:00-08:00",
+        withWhom: "Chris Lang",
+      },
+    ],
+  },
+];
+
+export const ACME_DECK = [
+  {
+    kicker: "Acme Robotics",
+    title: "Two options for Dana's VP",
+    body: "Dana asked for a lean quote and a full quote, and a deck she can forward. The recommendation is on the full option.",
+  },
+  {
+    kicker: "How it is priced",
+    title: "Seats are $0. The usage pool is the commitment.",
+    body: "40 platform seats are waived. $100,000 is 100 usage blocks at $1,000 each.",
+  },
+  {
+    kicker: "Recommended",
+    title: "Full, $185,000",
+    body: "Lean lands the 40 people. Full adds a forward deployed engineer for a quarter and premium support for the year.",
+  },
+] as const;

@@ -7,5 +7,7 @@ const root = dirname(fileURLToPath(import.meta.url));
 const nextConfig = {
   reactStrictMode: true,
   turbopack: { root },
+  // Dev HMR is blocked when the browser uses 127.0.0.1 instead of localhost.
+  allowedDevOrigins: ["127.0.0.1"],
 };
 export default nextConfig;
