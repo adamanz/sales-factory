@@ -1,0 +1,22 @@
+{
+  "header": "SYNTHETIC - not a real customer",
+  "account": "Acme Pilot Co (synthetic)",
+  "rep": "Jordan (AE)",
+  "turns": [
+    { "speaker": "Jordan (AE)", "text": "Thanks for joining, Priya. Agenda for today: understand your current triage workflow, see if a pilot makes sense, and if so pick a dated next step. Does that work?" },
+    { "speaker": "Priya (Prospect)", "text": "Yes. We have forty support agents and exception tickets are eating overtime." },
+    { "speaker": "Jordan (AE)", "text": "Walk me through what happens when an exception ticket lands." },
+    { "speaker": "Priya (Prospect)", "text": "It sits in a shared inbox until someone grabs it. Peak weeks we run a day behind, and CSAT tanks." },
+    { "speaker": "Jordan (AE)", "text": "What does that backlog cost you in overtime or churn?" },
+    { "speaker": "Priya (Prospect)", "text": "Overtime alone is about twelve thousand a month in Q4. Churn is harder to pin down." },
+    { "speaker": "Jordan (AE)", "text": "Who else needs to weigh in if we proposed a sixty day pilot under fifty k?" },
+    { "speaker": "Priya (Prospect)", "text": "I can greenlight under fifty k. My VP, Marcus, wants a security review before anything goes live. Budget is tight this half." },
+    { "speaker": "Jordan (AE)", "text": "That's fair. When you say tight, is it total dollars or how spend is split? Teams usually fund us from the overtime line if triage time drops by half." },
+    { "speaker": "Priya (Prospect)", "text": "Funding from overtime could work if the pilot actually halves triage. We also looked at Zendesk AI since we already pay for Zendesk." },
+    { "speaker": "Jordan (AE)", "text": "Makes sense to compare. Does funding from overtime address the budget concern for now?" },
+    { "speaker": "Priya (Prospect)", "text": "For now yes. Marcus will still want the security packet." },
+    { "speaker": "Jordan (AE)", "text": "Then let's get him that. Can we book thirty minutes Friday at 10am with you and Marcus to review a pilot plan and the security overview?" },
+    { "speaker": "Priya (Prospect)", "text": "Friday at 10am works. Send the invite to both of us." },
+    { "speaker": "Jordan (AE)", "text": "Will do. I'll send the invite today with a one-page pilot outline and our security overview link." }
+  ]
+}

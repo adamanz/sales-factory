@@ -16,7 +16,8 @@
     "setup:agents": "tsx scripts/setup-agents.ts",
     "setup:vault": "bash scripts/setup-vault.sh",
     "test": "tsx --test tests/*.test.ts",
-    "scorecard": "tsx scripts/scorecard.ts"
+    "scorecard": "tsx scripts/scorecard.ts",
+    "after-call": "tsx scripts/after-call-package.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "0.104.1",
