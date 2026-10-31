@@ -254,7 +254,81 @@ scripts/fixtures/call-acme.json                 scripted multi-option demo call
 scripts/e2e.ts                                  the rerunnable "test suite"
 salesforce/                                     DX project: seed SKUs + QuoteSettings · Opportunity cockpit (Slack LWC, decision-maker flow, Unipile WhatsApp)
 docs/img/, docs/_src/                           README screenshots + their source HTML (reproducible renders)
+lib/scorecard/, agents/scorecard-rubric.md      post-call rep coaching scorecard (see below)
 ```
+
+---
+
+## Rep coaching scorecard (post-call)
+
+Give it a finished call transcript and it returns a scorecard as JSON plus a Slack-ready mrkdwn
+summary. It only produces output. It never posts to Slack, writes to Salesforce, or stores anything.
+
+What it scores:
+
+| Area | How |
+|------|-----|
+| Talk-to-listen ratio per speaker | Code. Word share, or seconds when the transcript has timestamps (Recall segments). |
+| Discovery questions: count, open vs closed | Code. Quality (1-5 per question) comes from the LLM. |
+| Objections raised and how they were handled | Code finds candidates by category (price, status quo, timing, authority, need, risk). The LLM decides whether each is real and rates the handling. |
+| Competitor and pricing mentions | Code, using keyword lists in the rubric. |
+| Next step agreed (yes/no + quote) | Code finds candidates. The LLM decides whether the prospect actually agreed. |
+| Call craft (value articulation, listening, structure) | LLM only. Dropped from the score when the LLM is off. |
+| Overall score 0-100 | Code: weighted average of the components above, weights from the rubric. |
+| Top 2 coaching fixes with quotes | LLM, with heuristic fallbacks. Every quote is checked against the transcript; any the code can't find is dropped (`llm.droppedQuotes`). |
+
+Without `ANTHROPIC_API_KEY`, or with `--no-llm` / `"llm": false`, the qualitative parts fall back to
+heuristics, so the scorer always returns a full card. If the LLM call fails, you get the heuristic
+card with `llm.error` set.
+
+**Accepted input:** `{ account?, rep?, turns: [{ speaker, text, start?, end? }] }` (same shape as
+`scripts/fixtures/call-acme.json`), Recall post-call segments (bare array or `{ segments }`, parsed
+by the same `segmentsToTurns` the relay uses), or plain text with one `Speaker: text` or
+`[Speaker] text` line per turn. `[00:01:23]` timestamp prefixes are allowed. The rep is picked from
+`rep` / `--rep` if given, then by name (`Rep`, `AE`, `Sales`...), then the first speaker.
+
+**Editing the rubric:** `agents/scorecard-rubric.md`. The `json scorecard-config` block holds the
+weights, the talk-ratio band, keyword lists, and competitor names. The prose under
+"Grading guidance" is the LLM's system prompt. Neither needs a code change.
+
+```bash
+npm run scorecard -- scripts/fixtures/scorecard/northwind-discovery.json            # JSON + markdown
+npm run scorecard -- scripts/fixtures/scorecard/brightline-pitch.txt --format md --no-llm
+cat call.json | npm run scorecard -- - --rep "Maya" --account "Acme" --format json
+npm test                                                                             # scorer tests, LLM mocked
+
+curl -XPOST localhost:3000/api/scorecard -H 'content-type: application/json' \
+  -d '{"transcript": "Rep: What does your process look like today?\nProspect: Mostly spreadsheets.", "llm": false}'
+curl -XPOST 'localhost:3000/api/scorecard?account=Brightline' -H 'content-type: text/plain' \
+  --data-binary @scripts/fixtures/scorecard/brightline-pitch.txt
+```
+
+`POST /api/scorecard` returns `{ scorecard, markdown }`. It's stateless, so unlike the relay routes it
+runs as a normal Vercel serverless function (`maxDuration` 60s, rubric bundled through
+`outputFileTracingIncludes`).
+
+| Env var | Required | Purpose |
+|---------|----------|---------|
+| `ANTHROPIC_API_KEY` | No | Turns on LLM judgments. Without it the scorer runs in heuristic mode. |
+| `SCORECARD_MODEL` | No | Model for judgments. Default `claude-opus-4-8`. |
+| `SCORECARD_RUBRIC_PATH` | No | Use a different rubric file. |
+| `SCORECARD_API_TOKEN` | No | If set, the API route requires `Authorization: Bearer <token>`. Set this on any public deploy, since each call spends LLM tokens. |
+
+The CLI loads `.env.local` if it exists. Nothing secret is read from the repo.
+
+**What's next**
+
+- **Live nudges:** run `computeMetrics` on the rolling buffer in `lib/transcript.ts` during the call
+  and nudge the rep when talk share passes the band, an objection goes unanswered, or the call nears
+  its end with no next-step candidate. Most of these are deterministic, so they're cheap enough to
+  run every 15-second batch.
+- **Per-rep trend storage:** persist each scorecard keyed by rep and call date (Postgres or KV; the
+  relay's in-memory `store` resets on redeploy). Then chart component scores over time and pick
+  coaching fixes from recurring patterns, not just one call.
+- **Better speaker roles:** map Recall participants to rep and prospect through calendar invite
+  emails instead of name matching.
+- **Calibration:** grade a small set of real calls by hand and tune the rubric weights and keyword
+  lists against those grades.
 
 ---
 

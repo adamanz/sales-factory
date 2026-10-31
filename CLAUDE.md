@@ -84,6 +84,8 @@ Tool: `npm run recall:test "<meetingUrl>"` (also `… transcript <botId>` / `…
 | `scripts/fixtures/call-acme.json` | scripted multi-option demo call. |
 | `scripts/e2e.ts` | the rerunnable "test suite" (needs outcome-polling finished). |
 | `scripts/slack-test.ts` | `npm run slack:test` — Slack auth + one-thread post smoke test. |
+| `lib/scorecard/` · `agents/scorecard-rubric.md` | post-call rep scorecard: code metrics + LLM judgments, editable rubric. Output only, sends nothing. |
+| `app/api/scorecard/route.ts` · `scripts/scorecard.ts` | stateless scorecard API (Vercel-safe) and CLI. Tests: `tests/scorecard.test.ts` (LLM mocked). |
 
 ## Conventions & gotchas (don't relearn these the hard way)
 - **Model is `claude-opus-4-8`** everywhere. Adaptive thinking only — never `budget_tokens`,
@@ -117,6 +119,8 @@ npm run e2e                                            # assert real Quote + gro
 npm run slack:test                                     # Slack auth.test + a real one-thread post
 npm run refresh:sf                                     # refresh expired SF token
 npm run setup:agents                                   # (re)create env + agents (writes IDs to .env.local)
+npm run scorecard -- <transcript> [--no-llm]           # post-call rep scorecard (JSON + Slack markdown)
+npm test                                               # scorecard unit tests (LLM mocked, no network)
 ```
 
 ## Production / deploy (Railway)
