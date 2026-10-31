@@ -229,6 +229,9 @@ npm run e2e                                                                 # as
 | `npm run e2e` | Fires a replay, polls for grader `satisfied`, then asserts real Quotes + grounding (≥2 options, usage pool present, expansion SKU on top option, seats $0, only `SKU-%` items, offer page renders Recommended + Accept). |
 | `npm run slack:test` | Slack `auth.test` + a real root + threaded replies into the channel. |
 | `npm run recall:test "<meetingUrl>"` | Recall bot lifecycle + real transcript fetch (`… transcript <botId>` / `… status <botId>`). |
+| `npm test` | Unit tests for recording consent, Deepgram parsing, Eastern Time windows, free slots, and the read-only calendar guard. No network. |
+| `npm run test:deepgram` | Streams a short local sample to Deepgram after the recording announcement. |
+| `npm run test:slots` | Reads free/busy on the primary calendar for 9:00-17:00 ET. Does not create events. |
 | `npm run refresh:sf` | Refresh the expired `SALESFORCE_ACCESS_TOKEN` in `.env.local` from the `sf` CLI session. |
 | `npm run setup:agents` | Create the coordinator + 4 subagents (run **once**; IDs live in Anthropic). |
 | `npm run build` | Next 16 (Turbopack) production build. |
@@ -247,6 +250,10 @@ lib/consumer.ts                                 SSE consumer: runs the 4 custom 
 lib/accept.ts                                   shared accept loop: Accepted + deny losers + Opp sync → Closed Won + file ContentVersion + Slack reply
 lib/anthropic.ts                                Managed Agents session/event helpers (beta API)
 lib/{store,transcript,artifacts,offers,of-html,slack,recall}.ts   state · batching · HTML hosting · offers · accepted-OF html · Slack · Recall
+lib/coaching/{consent,deepgram}.ts              recording consent and Deepgram streaming
+lib/slots/{allowlist,window,finder,oauth,loopback-consent}.ts   9:00-17:00 ET free/busy, OAuth, read-only guard
+lib/secrets.ts                                  env, 1Password, or ~/.config/grokbot-secrets
+scripts/{deepgram-stream-test,slot-finder-test}.ts   live Deepgram stream and read-only free/busy
 agents/sales-factory.agent.yaml                 coordinator: tools + multiagent roster (quote/deck/order/research)
 agents/{quote,deck,order,research}.agent.yaml   the swarm
 agents/pitch-rubric.md                          the model-graded definition of "done"
