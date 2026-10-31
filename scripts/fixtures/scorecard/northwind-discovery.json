@@ -1,0 +1,23 @@
+{
+  "account": "Northwind Logistics (synthetic)",
+  "rep": "Maya (AE)",
+  "turns": [
+    { "speaker": "Maya (AE)", "text": "Thanks for the time, Dev. Quick agenda: I'd like to understand how your support team works today, share a little about us if it's relevant, and agree on whether a next step makes sense. Does that work?" },
+    { "speaker": "Dev (Prospect)", "text": "Works for me. We have about 60 agents across two shifts." },
+    { "speaker": "Maya (AE)", "text": "Great. Walk me through what happens today when a shipment exception ticket comes in." },
+    { "speaker": "Dev (Prospect)", "text": "It lands in a shared queue, someone triages it by hand, and then we chase the carrier over email. A bad week means a two day backlog and our CSAT drops hard." },
+    { "speaker": "Maya (AE)", "text": "Two days is a lot. What does that backlog cost you, in churn or in overtime?" },
+    { "speaker": "Dev (Prospect)", "text": "Overtime is maybe fifteen thousand a month in peak season. And we lost one big retail account last year partly because of slow responses." },
+    { "speaker": "Maya (AE)", "text": "That's painful. How are you deciding what to fix first, and who else weighs in on that decision?" },
+    { "speaker": "Dev (Prospect)", "text": "I own the budget, but our VP of Ops, Lena, signs anything over fifty k. We're also looking at Zendesk's AI add-on since we already use Zendesk." },
+    { "speaker": "Maya (AE)", "text": "Makes sense to look there first. What would the add-on need to do for you to call it a win?" },
+    { "speaker": "Dev (Prospect)", "text": "Auto-triage exceptions and draft the carrier email. Honestly my worry is price. Our budget for new tools this year is tight." },
+    { "speaker": "Maya (AE)", "text": "That's fair, and thanks for being direct. When you say tight, is it the total number or how it's split between headcount and software? Most teams fund us out of the overtime line, since we typically cut triage time by half." },
+    { "speaker": "Dev (Prospect)", "text": "Out of the overtime line could work. If it really halves triage, that pays for itself in peak season." },
+    { "speaker": "Maya (AE)", "text": "Does that address the budget concern for now, or is there more there?" },
+    { "speaker": "Dev (Prospect)", "text": "That addresses it for now. Lena will want to see numbers though." },
+    { "speaker": "Maya (AE)", "text": "Then let's build them with her. Can we book 30 minutes on Thursday at 2pm with you and Lena to walk through a pilot plan on last month's exception tickets?" },
+    { "speaker": "Dev (Prospect)", "text": "Yes, Thursday at 2pm works. Send the invite to both of us." },
+    { "speaker": "Maya (AE)", "text": "Will do. I'll send it today with a one-page pilot outline so Lena has context." }
+  ]
+}

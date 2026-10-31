@@ -1,0 +1,13 @@
+# Synthetic call: Brightline Health (anonymized). Plain-text format, "Speaker: text" per line.
+[00:00:04] Rep: Hey Sam, thanks for jumping on. So I'll just dive right in and show you the platform. We're the leading AI sales engagement tool, we have hundreds of customers, we integrate with every CRM, and our sequences are fully AI-written. We also do call recording, forecasting, and analytics, all in one place, which is something nobody else really does. Our customers usually see a big lift in reply rates in the first month.
+[00:01:10] Prospect: Okay. We use Outreach today.
+[00:01:14] Rep: Right, a lot of our customers came from Outreach. Do you like it?
+[00:01:18] Prospect: It's fine. It does the job.
+[00:01:21] Rep: Cool. So the big difference is our AI writes the emails for you, and it learns from your best reps. It also scores every call and tells managers where to coach. And the dashboards are really nice, the VPs love them. Pricing is per seat, it's about $120 per user per month, and we can do a discount if you sign this quarter.
+[00:02:30] Prospect: We're a healthcare company, so security is a big concern for us. Where does the call data get stored?
+[00:02:37] Rep: Yeah, we're super secure, everyone asks that. We have a trust page. Anyway, the other cool thing is the forecasting module, which pulls from your CRM automatically and flags deals at risk. Would that be useful?
+[00:03:15] Prospect: Maybe. I'm not sure we need forecasting right now.
+[00:03:19] Rep: Totally. Is your team using any AI today?
+[00:03:22] Prospect: Not really.
+[00:03:25] Rep: Got it. Well, I think you'd really like it. I'll send over some info and a deck, and you can let me know if you want to move forward. Sound good?
+[00:03:34] Prospect: Sure, send it over.
