@@ -8,6 +8,8 @@ const literal = (terms: string[]) => new RegExp(`(?<![\\w])(${terms.map(escape).
 const pattern = (sources: string[]) => new RegExp(`(${sources.join("|")})`, "i");
 
 const MONEY = /(\$\s?\d[\d,.]*\s?[km]?\b|\b\d[\d,.]*\s?(k|thousand|million)\b|\b(thousand|million) (dollars|a year|per year)\b)/i;
+// Imperative prompts ("Walk me through...") are discovery questions even without a "?".
+const PROMPT_START = /^(tell me|walk me|describe|explain|help me understand|talk me through)\b/i;
 const OPEN_START = /^(what|how|why|which|tell me|walk me|describe|explain|help me understand|talk me through|in what way)\b/i;
 const FILLER = /^(so|and|but|okay|ok|well|great|now|then|curious|totally fair|got it|right)[,\s]+/i;
 const CHECK_IN = /\b(make sense|sounds? good|does that (work|address|answer|help)|any questions|you know what i mean)\b|\b(right|okay|ok|yeah)\?$/i;
@@ -34,6 +36,8 @@ export function detectRepSpeakers(turns: Turn[], config: ScorecardConfig, explic
   return names.length ? [names[0]] : [];
 }
 
+const isQuestion = (s: string) => s.endsWith("?") || PROMPT_START.test(s);
+
 export function isOpenQuestion(q: string): boolean {
   return q.split(/[—–;,]|\s-\s/).some((clause) => {
     let c = clause.trim();
@@ -57,7 +61,7 @@ export function computeMetrics(turns: Turn[], config: ScorecardConfig, repOverri
     s.words += w;
     s.turns += 1;
     s.longestTurnWords = Math.max(s.longestTurnWords, w);
-    s.questions += sentences(t.text).filter((x) => x.endsWith("?")).length;
+    s.questions += sentences(t.text).filter(isQuestion).length;
     if (timed) s.seconds = round1((s.seconds ?? 0) + Math.max(0, t.end! - t.start!));
     stats.set(t.speaker, s);
   }
@@ -72,7 +76,7 @@ export function computeMetrics(turns: Turn[], config: ScorecardConfig, repOverri
   turns.forEach((t, i) => {
     if (!isRep(t.speaker)) return;
     for (const s of sentences(t.text)) {
-      if (s.endsWith("?")) repQuestions.push({ id: `Q${repQuestions.length + 1}`, turn: i, text: s, open: isOpenQuestion(s) });
+      if (isQuestion(s)) repQuestions.push({ id: `Q${repQuestions.length + 1}`, turn: i, text: s, open: isOpenQuestion(s) });
     }
   });
   const nextRe = literal(config.nextStepPatterns);

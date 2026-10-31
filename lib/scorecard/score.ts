@@ -1,6 +1,6 @@
 import { anthropicJudge, formatTranscript, scorecardModel } from "./judge";
 import { computeMetrics, heuristicHandling, heuristicNextStep, snippet } from "./metrics";
-import { parseTranscript, type ParsedTranscript } from "./parse";
+import { parseTranscript } from "./parse";
 import { loadRubric } from "./rubric";
 import type {
   CoachingFix, ComponentKey, Evidence, Handling, Judge, JudgeOutput, Metrics, Rubric, Scorecard, ScorecardConfig, Source, Turn,
@@ -19,7 +19,7 @@ export function defaultJudge(): Judge | null {
 }
 
 export async function scoreCall(input: unknown, opts: ScoreOptions = {}): Promise<Scorecard> {
-  const parsed: ParsedTranscript = isParsed(input) ? input : parseTranscript(input);
+  const parsed = parseTranscript(input);
   const { turns } = parsed;
   if (!turns.length) throw new Error("transcript has no speaker turns");
   if (new Set(turns.map((t) => t.speaker)).size < 2) throw new Error("transcript needs at least two speakers");
@@ -42,9 +42,6 @@ export async function scoreCall(input: unknown, opts: ScoreOptions = {}): Promis
   const verifier = quoteVerifier(turns);
   return assemble({ turns, metrics, rubric, verdict, verifier, account, llmError, judged: Boolean(judge) });
 }
-
-const isParsed = (x: unknown): x is ParsedTranscript =>
-  Boolean(x && typeof x === "object" && Array.isArray((x as any).turns) && (x as any).turns.every((t: any) => typeof t?.speaker === "string"));
 
 const norm = (s: string) => s.toLowerCase().replace(/[’‘]/g, "'").replace(/…$/, "").replace(/[^a-z0-9']+/g, " ").trim();
 

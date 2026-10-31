@@ -14,7 +14,9 @@
     "recall:test": "tsx scripts/recall-test.ts",
     "slack:test": "tsx --env-file=.env.local scripts/slack-test.ts",
     "setup:agents": "tsx scripts/setup-agents.ts",
-    "setup:vault": "bash scripts/setup-vault.sh"
+    "setup:vault": "bash scripts/setup-vault.sh",
+    "test": "tsx --test tests/*.test.ts",
+    "scorecard": "tsx scripts/scorecard.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "0.104.1",

@@ -17,7 +17,8 @@ export async function POST(req: NextRequest) {
   const qs = req.nextUrl.searchParams;
   let body: Record<string, any>;
   if ((req.headers.get("content-type") || "").includes("application/json")) {
-    body = await req.json().catch(() => ({}));
+    const json = await req.json().catch(() => ({}));
+    body = Array.isArray(json) ? { transcript: json } : json ?? {};
   } else {
     body = { transcript: await req.text() };
   }
