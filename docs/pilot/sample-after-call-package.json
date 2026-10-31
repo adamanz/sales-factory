@@ -1,0 +1,337 @@
+{
+  "kind": "after_call_package",
+  "synthetic": true,
+  "account": "Acme Pilot Co (synthetic)",
+  "rep": [
+    "Jordan (AE)"
+  ],
+  "generatedAt": "2026-10-31T00:00:00.000Z",
+  "outbound": {
+    "salesforceWrites": false,
+    "emailSends": false,
+    "externalFetches": false
+  },
+  "scorecard": {
+    "account": "Acme Pilot Co (synthetic)",
+    "rep": [
+      "Jordan (AE)"
+    ],
+    "overallScore": 78,
+    "components": {
+      "talkBalance": 94,
+      "discovery": 58,
+      "objectionHandling": 67,
+      "nextStep": 100,
+      "callCraft": null
+    },
+    "talk": {
+      "basis": "words",
+      "repTalkPct": 57,
+      "idealBandPct": [
+        30,
+        55
+      ],
+      "speakers": [
+        {
+          "speaker": "Jordan (AE)",
+          "role": "rep",
+          "words": 151,
+          "turns": 8,
+          "sharePct": 57,
+          "longestTurnWords": 29,
+          "questions": 7
+        },
+        {
+          "speaker": "Priya (Prospect)",
+          "role": "prospect",
+          "words": 114,
+          "turns": 7,
+          "sharePct": 43,
+          "longestTurnWords": 23,
+          "questions": 0
+        }
+      ],
+      "longestRepMonologue": {
+        "turn": 0,
+        "words": 29,
+        "quote": "Thanks for joining, Priya. Agenda for today: understand your current triage workflow, see if a pilot makes sense, and if so pick a dated next step. Does that work?"
+      }
+    },
+    "discovery": {
+      "count": 4,
+      "openCount": 2,
+      "avgQuality": null,
+      "qualitySource": "heuristic",
+      "questions": [
+        {
+          "id": "Q2",
+          "turn": 2,
+          "text": "Walk me through what happens when an exception ticket lands.",
+          "open": true,
+          "rating": null
+        },
+        {
+          "id": "Q3",
+          "turn": 4,
+          "text": "What does that backlog cost you in overtime or churn?",
+          "open": true,
+          "rating": null
+        },
+        {
+          "id": "Q5",
+          "turn": 8,
+          "text": "When you say tight, is it total dollars or how spend is split?",
+          "open": false,
+          "rating": null
+        },
+        {
+          "id": "Q6",
+          "turn": 10,
+          "text": "Does funding from overtime address the budget concern for now?",
+          "open": false,
+          "rating": null
+        }
+      ]
+    },
+    "objections": {
+      "count": 3,
+      "items": [
+        {
+          "id": "O1",
+          "turn": 7,
+          "speaker": "Priya (Prospect)",
+          "quote": "My VP, Marcus, wants a security review before anything goes live.",
+          "category": "risk",
+          "repResponse": "That's fair. When you say tight, is it total dollars or how spend is split? Teams usually fund us from the overtime line if triage time drops by half.",
+          "handling": "addressed",
+          "rating": 4,
+          "source": "heuristic"
+        },
+        {
+          "id": "O2",
+          "turn": 7,
+          "speaker": "Priya (Prospect)",
+          "quote": "Budget is tight this half.",
+          "category": "price",
+          "repResponse": "That's fair. When you say tight, is it total dollars or how spend is split? Teams usually fund us from the overtime line if triage time drops by half.",
+          "handling": "addressed",
+          "rating": 4,
+          "source": "heuristic"
+        },
+        {
+          "id": "O3",
+          "turn": 11,
+          "speaker": "Priya (Prospect)",
+          "quote": "Marcus will still want the security packet.",
+          "category": "risk",
+          "repResponse": "Then let's get him that. Can we book thirty minutes Friday at 10am with you and Marcus to review a pilot plan and the security overview?",
+          "handling": "partial",
+          "rating": 3,
+          "source": "heuristic"
+        }
+      ]
+    },
+    "mentions": {
+      "competitors": [
+        "Zendesk"
+      ],
+      "competitorMentions": [
+        {
+          "turn": 9,
+          "speaker": "Priya (Prospect)",
+          "term": "Zendesk",
+          "quote": "We also looked at Zendesk AI since we already pay for Zendesk."
+        }
+      ],
+      "pricingMentions": [
+        {
+          "turn": 4,
+          "speaker": "Jordan (AE)",
+          "term": "cost",
+          "quote": "What does that backlog cost you in overtime or churn?"
+        },
+        {
+          "turn": 7,
+          "speaker": "Priya (Prospect)",
+          "term": "Budget",
+          "quote": "Budget is tight this half."
+        },
+        {
+          "turn": 8,
+          "speaker": "Jordan (AE)",
+          "term": "spend",
+          "quote": "When you say tight, is it total dollars or how spend is split?"
+        },
+        {
+          "turn": 10,
+          "speaker": "Jordan (AE)",
+          "term": "budget",
+          "quote": "Does funding from overtime address the budget concern for now?"
+        }
+      ]
+    },
+    "nextStep": {
+      "agreed": true,
+      "quote": "Friday at 10am works. Send the invite to both of us.",
+      "owner": "Priya (Prospect)",
+      "when": "Friday",
+      "source": "heuristic"
+    },
+    "callCraft": null,
+    "coachingFixes": [
+      {
+        "title": "Ask more open discovery questions",
+        "why": "4 discovery question(s), 2 open; target is 6, mostly open, on pain, impact, and process.",
+        "tryInstead": "\"Walk me through what happens today when that goes wrong, and who feels it most?\"",
+        "evidence": [
+          {
+            "quote": "Does funding from overtime address the budget concern for now?",
+            "speaker": "Jordan (AE)"
+          }
+        ],
+        "source": "heuristic"
+      },
+      {
+        "title": "Clarify the risk objection before answering",
+        "why": "The rep answered, but didn't acknowledge and clarify the concern first.",
+        "tryInstead": "Acknowledge, ask, then answer: \"That's fair. When you say that, what's driving it? ... Does that address it?\"",
+        "evidence": [
+          {
+            "quote": "Marcus will still want the security packet.",
+            "speaker": "Priya (Prospect)"
+          },
+          {
+            "quote": "Then let's get him that. Can we book thirty minutes Friday at 10am with you and Marcus to review a pilot plan and the security…",
+            "speaker": "Jordan (AE)"
+          }
+        ],
+        "source": "heuristic"
+      }
+    ],
+    "summary": null,
+    "llm": {
+      "used": false,
+      "model": null,
+      "droppedQuotes": 0
+    }
+  },
+  "salesforcePreview": {
+    "mode": "preview_only",
+    "writes": false,
+    "apiCalls": false,
+    "changes": [
+      {
+        "object": "Task",
+        "field": "Subject",
+        "current": "UNKNOWN",
+        "proposed": "Call notes — Acme Pilot Co (synthetic)",
+        "rationale": "Log a completed call activity from the transcript.",
+        "evidenceQuote": "Friday at 10am works. Send the invite to both of us."
+      },
+      {
+        "object": "Task",
+        "field": "Description",
+        "current": "UNKNOWN",
+        "proposed": "Next step: Friday at 10am works. Send the invite to both of us.\nObjections: risk, price, risk",
+        "rationale": "Capture call summary and agreed next step for CRM history.",
+        "evidenceQuote": "Friday at 10am works. Send the invite to both of us."
+      },
+      {
+        "object": "Task",
+        "field": "Status",
+        "current": "UNKNOWN",
+        "proposed": "Completed",
+        "rationale": "Call already happened; activity should be closed.",
+        "evidenceQuote": null
+      },
+      {
+        "object": "Task",
+        "field": "ActivityDate",
+        "current": "UNKNOWN",
+        "proposed": "UNKNOWN",
+        "rationale": "Call date not present in transcript — leave for human review.",
+        "evidenceQuote": null
+      },
+      {
+        "object": "Task",
+        "field": "WhoId",
+        "current": "UNKNOWN",
+        "proposed": "UNKNOWN",
+        "rationale": "Contact Id requires a Salesforce lookup; never invent record IDs.",
+        "evidenceQuote": null
+      },
+      {
+        "object": "Task",
+        "field": "WhatId",
+        "current": "UNKNOWN",
+        "proposed": "UNKNOWN",
+        "rationale": "Opportunity Id requires a Salesforce lookup; never invent record IDs.",
+        "evidenceQuote": null
+      },
+      {
+        "object": "Opportunity",
+        "field": "StageName",
+        "current": "UNKNOWN",
+        "proposed": "Qualification",
+        "rationale": "Dated next step agreed on call — propose advancing into Qualification (human must confirm).",
+        "evidenceQuote": "Friday at 10am works. Send the invite to both of us."
+      },
+      {
+        "object": "Opportunity",
+        "field": "NextStep",
+        "current": "UNKNOWN",
+        "proposed": "Friday at 10am works. Send the invite to both of us.",
+        "rationale": "Mirror the on-call next-step commitment into Opportunity.NextStep.",
+        "evidenceQuote": "Friday at 10am works. Send the invite to both of us."
+      },
+      {
+        "object": "Opportunity",
+        "field": "CloseDate",
+        "current": "UNKNOWN",
+        "proposed": "UNKNOWN",
+        "rationale": "Close date was not stated on the call.",
+        "evidenceQuote": null
+      },
+      {
+        "object": "OpportunityContactRole",
+        "field": "Role",
+        "current": "UNKNOWN",
+        "proposed": "Economic Buyer (proposed)",
+        "rationale": "Prospect speaker \"Priya (Prospect)\" participated; role is a proposal only until verified in CRM.",
+        "evidenceQuote": null
+      },
+      {
+        "object": "OpportunityContactRole",
+        "field": "ContactId",
+        "current": "UNKNOWN",
+        "proposed": "UNKNOWN",
+        "rationale": "Contact Id requires Salesforce; never invent.",
+        "evidenceQuote": null
+      }
+    ]
+  },
+  "followUpEmail": {
+    "mode": "preview_only",
+    "sends": false,
+    "to": "UNKNOWN",
+    "cc": "UNKNOWN",
+    "subject": "Follow-up: Acme Pilot Co (synthetic)",
+    "body": "Hi —\n\nThanks for the conversation about Acme Pilot Co (synthetic).\nAs discussed, next step: Friday at 10am works. Send the invite to both of us.\n(Internal note for rep — not for send: Ask more open discovery questions)\n\nBest,\nJordan (AE)",
+    "evidenceQuotes": [
+      "Friday at 10am works. Send the invite to both of us."
+    ]
+  },
+  "nextSteps": [
+    {
+      "action": "Friday at 10am works. Send the invite to both of us.",
+      "owner": "Priya (Prospect)",
+      "dueDate": "Friday",
+      "evidenceQuote": "Friday at 10am works. Send the invite to both of us.",
+      "source": "heuristic"
+    }
+  ],
+  "llm": {
+    "used": false,
+    "model": null
+  }
+}

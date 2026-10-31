@@ -255,6 +255,7 @@ scripts/e2e.ts                                  the rerunnable "test suite"
 salesforce/                                     DX project: seed SKUs + QuoteSettings · Opportunity cockpit (Slack LWC, decision-maker flow, Unipile WhatsApp)
 docs/img/, docs/_src/                           README screenshots + their source HTML (reproducible renders)
 lib/scorecard/, agents/scorecard-rubric.md      post-call rep coaching scorecard (see below)
+lib/after-call/, docs/pilot/                    after-call package (scorecard + CRM/email preview)
 ```
 
 ---
@@ -296,6 +297,7 @@ npm run scorecard -- scripts/fixtures/scorecard/northwind-discovery.json        
 npm run scorecard -- scripts/fixtures/scorecard/brightline-pitch.txt --format md --no-llm
 cat call.json | npm run scorecard -- - --rep "Maya" --account "Acme" --format json
 npm test                                                                             # scorer tests, LLM mocked
+npm run after-call -- scripts/fixtures/scorecard/synthetic-acme-pilot.json --no-llm --format md
 
 curl -XPOST localhost:3000/api/scorecard -H 'content-type: application/json' \
   -d '{"transcript": "Rep: What does your process look like today?\nProspect: Mostly spreadsheets.", "llm": false}'
