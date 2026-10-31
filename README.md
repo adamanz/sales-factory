@@ -191,6 +191,17 @@ A single `POST /api/recall/replay` of the scripted Acme Robotics call produced, 
 
 ---
 
+## Try the sample workspace
+
+A prospect can see the value without Slack, Salesforce, or a live call.
+
+1. `npm run dev`
+2. Open `/`. **Start the walkthrough** is three screens, then the seeded workspace.
+3. Or open `/demo?call=acme` and read the quote immediately. **Play from the start** runs the Acme call in about 50 seconds.
+4. **Accept** and **hold a time** stay in the browser. `GET /api/demo/workspace` returns the seed and does not send anything.
+
+Deepgram coaching, the nudge engine, and Slot Finder are not imported. Drop JSON at `data/peers/deepgram.json`, `data/peers/nudges.json`, or `data/peers/slots.json` to replace the sample for the call ids in the file. The shape is the `tips`, `nudges`, and `slots` arrays in `lib/demo/types.ts`.
+
 ## Quickstart
 
 ```bash

@@ -13,12 +13,14 @@
     "verify:close": "tsx --env-file=.env.local scripts/verify-close.ts",
     "recall:test": "tsx scripts/recall-test.ts",
     "slack:test": "tsx --env-file=.env.local scripts/slack-test.ts",
+    "test": "tsx --test tests/*.test.ts",
     "setup:agents": "tsx scripts/setup-agents.ts",
     "setup:vault": "bash scripts/setup-vault.sh"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "0.104.1",
     "next": "^16.2.9",
+    "radix-ui": "^1.8.1",
     "react": "^19.2.7",
     "react-dom": "^19.2.7"
   },
